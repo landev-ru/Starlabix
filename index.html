@@ -68,15 +68,9 @@
     details[open] .chev { transform: rotate(180deg); }
     .chev { transition: transform 0.2s ease; }
 
-    /* Логотип */
     .brand-logo { height: 38px; width: auto; display: block; }
     .brand-logo-sm { height: 28px; width: auto; display: block; }
-    /* Логотип имеет светлый фон — в тёмной теме помещаем в светлую плашку */
-    .dark .logo-wrap {
-      background: #ffffff;
-      border-radius: 12px;
-      padding: 6px 10px;
-    }
+    .dark .logo-wrap { background: #ffffff; border-radius: 12px; padding: 6px 10px; }
   </style>
 </head>
 
@@ -93,6 +87,7 @@
       <div class="flex items-center gap-1 sm:gap-2">
         <a href="#about" class="hidden lg:inline-flex px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">О проекте</a>
         <a href="#features" class="hidden lg:inline-flex px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">Возможности</a>
+        <a href="#api-access" class="hidden lg:inline-flex px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">API</a>
         <a href="#install" class="hidden lg:inline-flex px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">Установка</a>
         <a href="#usage" class="hidden lg:inline-flex px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">Использование</a>
         <a href="#template" class="hidden lg:inline-flex px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">Шаблон</a>
@@ -113,14 +108,12 @@
     <div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-16 md:pt-24 md:pb-24">
       <div class="max-w-3xl mx-auto text-center">
 
-        <!-- Большой логотип -->
         <div class="flex justify-center mb-8">
           <div class="logo-wrap inline-block">
-            <img src="logo.png" alt="Starlabix" class="w-auto" />
+            <img src="logo.png" alt="Starlabix" class="h-32 md:h-40 w-auto" />
           </div>
         </div>
 
-        <!-- Badges -->
         <div class="flex flex-wrap items-center justify-center gap-2 mb-6">
           <span class="badge-shield bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-500/20">
             <span class="w-1.5 h-1.5 rounded-full bg-violet-500"></span> PHP 7.4+
@@ -147,9 +140,9 @@
         </p>
 
         <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
-          <a href="#install" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold shadow-lg shadow-brand-600/25 transition-all hover:shadow-brand-600/40 hover:-translate-y-0.5">
-            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
-            Быстрый старт
+          <a href="#api-access" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold shadow-lg shadow-brand-600/25 transition-all hover:shadow-brand-600/40 hover:-translate-y-0.5">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M15 7a2 2 0 012 2m4 0a6 6 0 01-7.743 5.743L11 17H9v2H7v2H4a1 1 0 01-1-1v-2.586a1 1 0 01.293-.707l5.964-5.964A6 6 0 1121 9z"/></svg>
+            Получить API-доступ
           </a>
           <a href="https://github.com/landev-ru/Starlabix" target="_blank" rel="noopener"
              class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-gray-300 dark:border-white/15 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
@@ -205,9 +198,14 @@
           Zabbix забирает данные через External Check и раскладывает их на items
           через <strong>JSONPATH</strong>.
         </p>
+        <p>
+          Для работы требуется <strong class="text-gray-900 dark:text-white">AppId</strong> и
+          <strong class="text-gray-900 dark:text-white">Secret</strong> от вашего приложения StarLine —
+          подробная инструкция в разделе
+          <a href="#api-access" class="text-brand-600 dark:text-brand-400 hover:underline font-medium">Получение доступа к API</a>.
+        </p>
       </div>
 
-      <!-- Flow -->
       <div class="mt-12 grid sm:grid-cols-3 gap-4">
         <div class="p-5 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-center">
           <div class="text-xs font-semibold text-blue-700 dark:text-blue-400 uppercase tracking-wider mb-2">Шаг 1</div>
@@ -228,15 +226,210 @@
     </div>
   </section>
 
+  <!-- ============ API ACCESS ============ -->
+  <section id="api-access" class="py-20 md:py-28 bg-gray-50 dark:bg-white/[0.015] border-y border-gray-200/60 dark:border-white/10">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">🔑 Получение доступа к StarLine API</h2>
+        <p class="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+          Прежде чем приступить к установке, получите <strong>AppId</strong> и <strong>Secret</strong> в личном кабинете StarLine.
+          Без них скрипт не сможет авторизоваться в API.
+        </p>
+      </div>
+
+      <!-- Info banner -->
+      <div class="mb-10 p-5 rounded-2xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20">
+        <div class="flex gap-3">
+          <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          <div>
+            <p class="font-semibold text-blue-800 dark:text-blue-300 text-sm mb-1">Что такое AppId и Secret?</p>
+            <p class="text-sm text-blue-700 dark:text-blue-400/90 leading-relaxed">
+              Это идентификатор и секретный ключ вашего приложения. Открытое StarLine API позволяет владельцам охранных
+              комплексов создавать приложения для управления своими автомобилями. <strong>AppId</strong> и <strong>Secret</strong>
+              дают доступ исключительно к вашей машине.
+            </p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Steps -->
+      <div class="space-y-6">
+
+        <!-- Step 1 -->
+        <div class="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 text-sm font-bold flex items-center justify-center">1</span>
+            <h3 class="font-bold">Войдите в личный кабинет</h3>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            Откройте <a href="https://my.starline.ru/site/login" target="_blank" rel="noopener" class="text-brand-600 dark:text-brand-400 hover:underline font-medium">my.starline.ru</a> и авторизуйтесь под своей учётной записью.
+          </p>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 text-sm font-bold flex items-center justify-center">2</span>
+            <h3 class="font-bold">Перейдите в раздел «Разработчикам»</h3>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            В верхнем меню личного кабинета найдите и откройте раздел <strong>«Разработчикам»</strong>.
+          </p>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 text-sm font-bold flex items-center justify-center">3</span>
+            <h3 class="font-bold">Нажмите «Создать приложение»</h3>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400">
+            В открывшемся разделе нажмите кнопку <strong>«Создать приложение»</strong>.
+          </p>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 text-sm font-bold flex items-center justify-center">4</span>
+            <h3 class="font-bold">Заполните форму «Новое приложение»</h3>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">В окне <strong>«Новое приложение»</strong> укажите:</p>
+
+          <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-white/10 mb-4">
+            <table class="w-full text-sm">
+              <thead class="bg-gray-50 dark:bg-white/[0.03]">
+                <tr>
+                  <th class="px-4 py-2.5 text-left font-semibold">Поле</th>
+                  <th class="px-4 py-2.5 text-left font-semibold">Что указать</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-gray-100 dark:divide-white/5 text-gray-700 dark:text-gray-300">
+                <tr>
+                  <td class="px-4 py-2.5 font-medium">Имя приложения</td>
+                  <td class="px-4 py-2.5">Например, <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">Starlabix</code> или <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">Zabbix Monitoring</code></td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-2.5 font-medium">Описание приложения</td>
+                  <td class="px-4 py-2.5">Например, «Мониторинг сигнализации в Zabbix»</td>
+                </tr>
+                <tr>
+                  <td class="px-4 py-2.5 font-medium">User IP</td>
+                  <td class="px-4 py-2.5">IP-адрес вашего сервера Zabbix <strong>(обязательно!)</strong></td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Нажмите <strong>«СОХРАНИТЬ»</strong>.</p>
+
+          <div class="p-3 rounded-lg bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-xs text-amber-800 dark:text-amber-300">
+            ⚠️ <strong>Важно:</strong> StarLine привязывает токен к IP-адресу, указанному в поле <strong>User IP</strong>. Если сервер Zabbix работает за NAT — укажите его внешний IP. Если IP динамический — настройте статический IP или DDNS.
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 text-sm font-bold flex items-center justify-center">5</span>
+            <h3 class="font-bold">Скопируйте AppId и Secret</h3>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            После сохранения в разделе <strong>«Разработчикам»</strong> появится созданное приложение с парой <strong>AppId</strong> и <strong>Secret</strong>.
+          </p>
+          <div class="rounded-lg bg-gray-900 dark:bg-black/60 p-4 code-block text-gray-300 text-xs overflow-x-auto">
+            <div><span class="text-gray-500"># Пример отображения в личном кабинете:</span></div>
+            <div class="mt-2">AppId: <span class="text-brand-400">1234</span></div>
+            <div>Secret: <span class="text-brand-400">mvNWuRJadRzHlcIkIjadR9o0Tnf0iMzsCsd</span></div>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mt-4">
+            Скопируйте оба значения — они понадобятся при настройке файла <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">user_data.php</code>.
+          </p>
+        </div>
+
+        <!-- Step 6 -->
+        <div class="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 text-sm font-bold flex items-center justify-center">6</span>
+            <h3 class="font-bold">Внесите значения в <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">user_data.php</code></h3>
+          </div>
+          <div class="rounded-lg bg-gray-900 dark:bg-black/60 p-4 code-block text-gray-300 text-xs overflow-x-auto">
+            <div><span class="text-gray-500">&lt;?php</span></div>
+            <div><span class="text-brand-400">$user_login</span> = <span class="text-emerald-400">'user@example.com'</span>;</div>
+            <div><span class="text-brand-400">$user_pass</span>  = <span class="text-emerald-400">sha1('ваш_пароль')</span>;</div>
+            <div class="mt-2"><span class="text-brand-400">$user_AppId</span>       = <span class="text-emerald-400">'1234'</span>;</div>
+            <div><span class="text-brand-400">$user_Secret</span>      = <span class="text-emerald-400">'mvNWuRJadRzHlcIkIjadR9o0Tnf0iMzsCsd'</span>;</div>
+            <div><span class="text-brand-400">$user_Secret_md5</span>  = <span class="text-brand-400">md5</span>(<span class="text-emerald-400">'mvNWuRJadRzHlcIkIjadR9o0Tnf0iMzsCsd'</span>);</div>
+            <div><span class="text-gray-500">?&gt;</span></div>
+          </div>
+
+          <div class="mt-4 p-3 rounded-lg bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-xs text-blue-800 dark:text-blue-300">
+            💡 <strong>Подсказка:</strong> <code class="font-mono">$user_Secret_md5</code> можно сгенерировать командой:<br/>
+            <span class="font-mono">php -r "echo md5('ваш_Secret');"</span>
+          </div>
+        </div>
+
+        <!-- Проверка -->
+        <div class="p-6 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20">
+          <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            <div class="flex-1">
+              <h3 class="font-bold text-emerald-900 dark:text-emerald-300 mb-2">🧪 Проверка</h3>
+              <p class="text-sm text-emerald-800 dark:text-emerald-400/90 mb-3">
+                После заполнения <code class="text-xs font-mono bg-emerald-100 dark:bg-emerald-500/15 px-1.5 py-0.5 rounded">user_data.php</code> запустите скрипт вручную:
+              </p>
+              <div class="rounded-lg bg-gray-900 dark:bg-black/60 p-3 code-block text-gray-300 text-xs mb-3">
+                <span class="text-emerald-400">php</span> starlabix.php | jq
+              </div>
+              <p class="text-sm text-emerald-800 dark:text-emerald-400/90">
+                Если всё настроено корректно — получите JSON с полями <code class="text-xs font-mono bg-emerald-100 dark:bg-emerald-500/15 px-1 rounded">user_info</code>,
+                <code class="text-xs font-mono bg-emerald-100 dark:bg-emerald-500/15 px-1 rounded">mobile_devices</code>,
+                <code class="text-xs font-mono bg-emerald-100 dark:bg-emerald-500/15 px-1 rounded">obd_params</code>,
+                <code class="text-xs font-mono bg-emerald-100 dark:bg-emerald-500/15 px-1 rounded">obd_errors</code>.
+                При ошибке — смотрите раздел <a href="#faq" class="underline font-medium">FAQ</a>.
+              </p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Безопасность -->
+        <div class="p-6 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20">
+          <div class="flex items-start gap-3">
+            <svg class="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+            <div class="flex-1">
+              <h3 class="font-bold text-red-900 dark:text-red-300 mb-3">🛡️ Безопасность</h3>
+              <p class="text-sm text-red-800 dark:text-red-400/90 font-semibold mb-3">
+                Никогда не публикуйте <code class="text-xs font-mono bg-red-100 dark:bg-red-500/15 px-1.5 py-0.5 rounded">user_data.php</code> в открытых репозиториях!
+              </p>
+              <ul class="text-sm text-red-800 dark:text-red-400/90 space-y-2 list-disc list-inside">
+                <li>Добавьте файл в <code class="text-xs font-mono bg-red-100 dark:bg-red-500/15 px-1 rounded">.gitignore</code>:
+                  <div class="mt-1 rounded-lg bg-gray-900 dark:bg-black/60 p-2 code-block text-gray-300 text-xs">user_data.php</div>
+                </li>
+                <li>Используйте <code class="text-xs font-mono bg-red-100 dark:bg-red-500/15 px-1 rounded">user_data.php.example</code> как публичный образец.</li>
+                <li>Ограничьте права доступа:
+                  <div class="mt-1 rounded-lg bg-gray-900 dark:bg-black/60 p-2 code-block text-gray-300 text-xs">
+                    chmod 600 user_data.php<br/>
+                    chown zabbix:zabbix user_data.php
+                  </div>
+                </li>
+                <li><strong>Secret</strong> — это секретный ключ. Если он скомпрометирован — немедленно удалите приложение в личном кабинете и создайте новое.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </section>
+
   <!-- ============ FEATURES ============ -->
-  <section id="features" class="py-20 md:py-28 bg-gray-50 dark:bg-white/[0.015] border-y border-gray-200/60 dark:border-white/10">
+  <section id="features" class="py-20 md:py-28">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-14">
         <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">✨ Возможности</h2>
         <p class="text-gray-600 dark:text-gray-400 max-w-xl mx-auto">Полный набор телеметрии StarLine в одном JSON-ответе.</p>
       </div>
 
-      <!-- Comparison table -->
       <div class="mb-12 overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.02]">
         <table class="w-full text-sm">
           <thead>
@@ -258,7 +451,6 @@
         </table>
       </div>
 
-      <!-- Data cards -->
       <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
         <div class="group p-6 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.02] hover:border-brand-300 dark:hover:border-brand-500/30 hover:shadow-lg hover:shadow-brand-500/5 transition-all">
           <div class="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
@@ -312,7 +504,7 @@
   </section>
 
   <!-- ============ INSTALL ============ -->
-  <section id="install" class="py-20 md:py-28">
+  <section id="install" class="py-20 md:py-28 bg-gray-50 dark:bg-white/[0.015] border-y border-gray-200/60 dark:border-white/10">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-12">
         <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">🚀 Установка</h2>
@@ -320,7 +512,6 @@
       </div>
 
       <div class="space-y-6">
-        <!-- Step 1 -->
         <div class="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10">
           <div class="flex items-center gap-3 mb-4">
             <span class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 text-sm font-bold flex items-center justify-center">1</span>
@@ -333,7 +524,6 @@
           </div>
         </div>
 
-        <!-- Step 2 -->
         <div class="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10">
           <div class="flex items-center gap-3 mb-4">
             <span class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 text-sm font-bold flex items-center justify-center">2</span>
@@ -345,7 +535,6 @@
           </div>
         </div>
 
-        <!-- Step 3 -->
         <div class="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10">
           <div class="flex items-center gap-3 mb-4">
             <span class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 text-sm font-bold flex items-center justify-center">3</span>
@@ -358,13 +547,15 @@
           </div>
         </div>
 
-        <!-- Step 4 -->
         <div class="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10">
           <div class="flex items-center gap-3 mb-4">
             <span class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 text-sm font-bold flex items-center justify-center">4</span>
             <h3 class="font-bold">Заполняем <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">user_data.php</code></h3>
           </div>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Укажите логин/пароль от my.starline.ru и AppId/Secret от developer.starline.ru:</p>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
+            Укажите логин/пароль от my.starline.ru и AppId/Secret, полученные в
+            <a href="#api-access" class="text-brand-600 dark:text-brand-400 hover:underline font-medium">разделе про API</a>:
+          </p>
           <div class="rounded-lg bg-gray-900 dark:bg-black/60 p-4 code-block text-gray-300 text-xs overflow-x-auto">
             <span class="text-brand-400">$user_login</span> = <span class="text-emerald-400">'user@example.com'</span>;<br/>
             <span class="text-brand-400">$user_pass</span>  = <span class="text-emerald-400">sha1('ваш_пароль')</span>;<br/>
@@ -374,7 +565,6 @@
           </div>
         </div>
 
-        <!-- Step 5 -->
         <div class="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10">
           <div class="flex items-center gap-3 mb-4">
             <span class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 text-sm font-bold flex items-center justify-center">5</span>
@@ -390,7 +580,7 @@
   </section>
 
   <!-- ============ USAGE ============ -->
-  <section id="usage" class="py-20 md:py-28 bg-gray-50 dark:bg-white/[0.015] border-y border-gray-200/60 dark:border-white/10">
+  <section id="usage" class="py-20 md:py-28">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-14">
         <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">📘 Использование</h2>
@@ -398,7 +588,6 @@
       </div>
 
       <div class="grid lg:grid-cols-2 gap-6">
-        <!-- CLI card -->
         <div class="rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.02] overflow-hidden">
           <div class="px-6 py-5 border-b border-gray-200 dark:border-white/10 flex items-center gap-3">
             <div class="w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center">
@@ -424,7 +613,6 @@
           </div>
         </div>
 
-        <!-- Zabbix card -->
         <div class="rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.02] overflow-hidden">
           <div class="px-6 py-5 border-b border-gray-200 dark:border-white/10 flex items-center gap-3">
             <div class="w-9 h-9 rounded-lg bg-red-50 dark:bg-red-500/10 flex items-center justify-center">
@@ -456,7 +644,7 @@
   </section>
 
   <!-- ============ TEMPLATE ============ -->
-  <section id="template" class="py-20 md:py-28">
+  <section id="template" class="py-20 md:py-28 bg-gray-50 dark:bg-white/[0.015] border-y border-gray-200/60 dark:border-white/10">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-12">
         <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">📋 Шаблон Zabbix</h2>
@@ -504,7 +692,7 @@
   </section>
 
   <!-- ============ STRUCTURE ============ -->
-  <section id="structure" class="py-20 md:py-28 bg-gray-50 dark:bg-white/[0.015] border-y border-gray-200/60 dark:border-white/10">
+  <section id="structure" class="py-20 md:py-28">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-12">
         <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">📁 Структура проекта</h2>
@@ -513,17 +701,25 @@
         <pre class="p-5 code-block text-gray-300 overflow-x-auto"><code>Starlabix/
 ├── <span class="text-brand-400">starlabix.php</span>                <span class="text-gray-500"># Основной скрипт (External Check)</span>
 ├── <span class="text-amber-400">user_data.php</span>                <span class="text-gray-500"># Учётные данные (заполнить самостоятельно)</span>
+├── <span class="text-amber-400">user_data.php.example</span>        <span class="text-gray-500"># Образец для публичного использования</span>
 ├── <span class="text-emerald-400">zbx_export_hosts.yaml</span>        <span class="text-gray-500"># Шаблон Zabbix 7.4</span>
 ├── <span class="text-gray-100">logo.png</span>                     <span class="text-gray-500"># Логотип проекта</span>
 ├── <span class="text-gray-100">index.html</span>                   <span class="text-gray-500"># Страница проекта (GitHub Pages)</span>
+├── <span class="text-gray-100">docs/</span>                        <span class="text-gray-500"># Скриншоты для документации</span>
+│   ├── step1-login.png
+│   ├── step2-developers.png
+│   ├── step3-create-app.png
+│   ├── step4-new-app.png
+│   └── step5-app-credentials.png
 ├── <span class="text-gray-100">LICENSE</span>                      <span class="text-gray-500"># MIT License</span>
+├── <span class="text-gray-100">.gitignore</span>                   <span class="text-gray-500"># Исключения (user_data.php и др.)</span>
 └── <span class="text-gray-100">README.md</span></code></pre>
       </div>
     </div>
   </section>
 
   <!-- ============ WARNINGS ============ -->
-  <section id="warnings" class="py-20 md:py-28">
+  <section id="warnings" class="py-20 md:py-28 bg-gray-50 dark:bg-white/[0.015] border-y border-gray-200/60 dark:border-white/10">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-12">
         <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">⚠️ Важные замечания</h2>
@@ -562,7 +758,7 @@
   </section>
 
   <!-- ============ FAQ ============ -->
-  <section id="faq" class="py-20 md:py-28 bg-gray-50 dark:bg-white/[0.015] border-y border-gray-200/60 dark:border-white/10">
+  <section id="faq" class="py-20 md:py-28">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-12">
         <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">❓ FAQ</h2>
