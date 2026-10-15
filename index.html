@@ -1,17 +1,681 @@
-<!doctype html>
-<html lang="en">
+<!DOCTYPE html>
+<html lang="ru" class="scroll-smooth">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Bootstrap demo</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Starlabix — StarLine Monitoring for Zabbix</title>
+  <meta name="description" content="Мониторинг автомобильной сигнализации StarLine в Zabbix через официальный API. Готовый скрипт и шаблон Zabbix 7.4." />
+
+  <meta property="og:title" content="Starlabix — StarLine Monitoring for Zabbix" />
+  <meta property="og:description" content="Мониторинг StarLine в Zabbix через официальный API." />
+  <meta property="og:image" content="logo.png" />
+  <meta property="og:type" content="website" />
+
+  <link rel="icon" type="image/png" href="logo.png" />
+
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+          colors: {
+            brand: {
+              50:'#eff6ff',100:'#dbeafe',200:'#bfdbfe',300:'#93c5fd',
+              400:'#60a5fa',500:'#3b82f6',600:'#2563eb',700:'#1d4ed8',
+              800:'#1e40af',900:'#1e3a8a',
+            },
+            slate: {
+              900: '#0f172a',
+              800: '#1e293b',
+              700: '#334155',
+              600: '#475569',
+            },
+            surface: { light:'#ffffff', dark:'#0a0f1c' },
+          },
+        },
+      },
+    };
+  </script>
+  <script>
+    if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
+  <style>
+    html { font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11'; }
+    body { font-family: 'Inter', sans-serif; }
+    .code-block { font-family: 'JetBrains Mono', monospace; font-size: 0.8125rem; line-height: 1.6; }
+    .glow { box-shadow: 0 0 40px -10px rgba(37, 99, 235, 0.3); }
+    .gradient-text {
+      background: linear-gradient(135deg, #2563eb 0%, #1e88e5 60%, #0ea5e9 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .badge-shield {
+      display: inline-flex; align-items: center; gap: 0.25rem;
+      padding: 0.125rem 0.5rem; border-radius: 9999px;
+      font-size: 0.6875rem; font-weight: 600; letter-spacing: 0.02em;
+    }
+    details > summary { list-style: none; cursor: pointer; }
+    details > summary::-webkit-details-marker { display: none; }
+    details[open] .chev { transform: rotate(180deg); }
+    .chev { transition: transform 0.2s ease; }
+
+    /* Логотип */
+    .brand-logo { height: 38px; width: auto; display: block; }
+    .brand-logo-sm { height: 28px; width: auto; display: block; }
+    /* Логотип имеет светлый фон — в тёмной теме помещаем в светлую плашку */
+    .dark .logo-wrap {
+      background: #ffffff;
+      border-radius: 12px;
+      padding: 6px 10px;
+    }
+  </style>
 </head>
-<body>
 
-<div class="container-xxl bd-gutter mt-3 my-md-4 bd-layout">
-<h1>Hello, world!</h1>
-</div>
+<body class="bg-white dark:bg-surface-dark text-gray-900 dark:text-gray-100 antialiased selection:bg-brand-500/20">
 
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
+  <!-- ============ NAV ============ -->
+  <header class="sticky top-0 z-50 border-b border-gray-200/60 dark:border-white/10 bg-white/80 dark:bg-surface-dark/80 backdrop-blur-xl">
+    <nav class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
+      <a href="#" class="flex items-center group" aria-label="Starlabix — на главную">
+        <div class="logo-wrap">
+          <img src="logo.png" alt="Starlabix" class="brand-logo transition-transform group-hover:scale-[1.03]" />
+        </div>
+      </a>
+      <div class="flex items-center gap-1 sm:gap-2">
+        <a href="#about" class="hidden lg:inline-flex px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">О проекте</a>
+        <a href="#features" class="hidden lg:inline-flex px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">Возможности</a>
+        <a href="#install" class="hidden lg:inline-flex px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">Установка</a>
+        <a href="#usage" class="hidden lg:inline-flex px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">Использование</a>
+        <a href="#template" class="hidden lg:inline-flex px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">Шаблон</a>
+        <a href="#faq" class="hidden lg:inline-flex px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 hover:text-gray-900 dark:hover:text-white transition-colors">FAQ</a>
+        <a href="https://github.com/landev-ru/Starlabix" target="_blank" rel="noopener"
+           class="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-gray-900 dark:bg-white text-white dark:text-gray-900 text-sm font-semibold hover:opacity-90 transition-opacity">
+          <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.4.6.1.82-.26.82-.58v-2.03c-3.34.73-4.04-1.6-4.04-1.6-.55-1.4-1.34-1.77-1.34-1.77-1.1-.75.08-.73.08-.73 1.22.08 1.86 1.25 1.86 1.25 1.08 1.85 2.83 1.3 3.52 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.3.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 016 0c2.28-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.92 1.24 3.22 0 4.6-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.3c0 .32.22.7.82.58C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+          GitHub
+        </a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ============ HERO ============ -->
+  <section class="relative overflow-hidden">
+    <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[420px] bg-brand-500/10 dark:bg-brand-500/5 rounded-full blur-3xl pointer-events-none"></div>
+
+    <div class="relative max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-16 md:pt-24 md:pb-24">
+      <div class="max-w-3xl mx-auto text-center">
+
+        <!-- Большой логотип -->
+        <div class="flex justify-center mb-8">
+          <div class="logo-wrap inline-block">
+            <img src="logo.png" alt="Starlabix" class="h-32 md:h-40 w-auto" />
+          </div>
+        </div>
+
+        <!-- Badges -->
+        <div class="flex flex-wrap items-center justify-center gap-2 mb-6">
+          <span class="badge-shield bg-violet-50 dark:bg-violet-500/10 text-violet-700 dark:text-violet-300 border border-violet-200 dark:border-violet-500/20">
+            <span class="w-1.5 h-1.5 rounded-full bg-violet-500"></span> PHP 7.4+
+          </span>
+          <span class="badge-shield bg-red-50 dark:bg-red-500/10 text-red-700 dark:text-red-300 border border-red-200 dark:border-red-500/20">
+            <span class="w-1.5 h-1.5 rounded-full bg-red-500"></span> Zabbix 6.0+ / 7.4
+          </span>
+          <span class="badge-shield bg-blue-50 dark:bg-blue-500/10 text-blue-700 dark:text-blue-300 border border-blue-200 dark:border-blue-500/20">
+            <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> StarLine API
+          </span>
+          <span class="badge-shield bg-amber-50 dark:bg-amber-500/10 text-amber-700 dark:text-amber-300 border border-amber-200 dark:border-amber-500/20">
+            MIT License
+          </span>
+        </div>
+
+        <h1 class="text-4xl sm:text-5xl md:text-6xl font-extrabold tracking-tight leading-[1.1] mb-5">
+          Мониторинг <span class="gradient-text">StarLine</span><br/>
+          в Zabbix
+        </h1>
+        <p class="text-lg md:text-xl text-gray-600 dark:text-gray-400 leading-relaxed mb-8 max-w-2xl mx-auto">
+          Скрипт собирает состояние сигнализации, напряжение АКБ, температуру,
+          уровень GPS/GSM, данные OBD-II и координаты — и передаёт их в Zabbix
+          через External Check.
+        </p>
+
+        <div class="flex flex-col sm:flex-row items-center justify-center gap-3">
+          <a href="#install" class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl bg-brand-600 hover:bg-brand-700 text-white font-semibold shadow-lg shadow-brand-600/25 transition-all hover:shadow-brand-600/40 hover:-translate-y-0.5">
+            <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+            Быстрый старт
+          </a>
+          <a href="https://github.com/landev-ru/Starlabix" target="_blank" rel="noopener"
+             class="w-full sm:w-auto inline-flex items-center justify-center gap-2 px-6 py-3 rounded-xl border border-gray-300 dark:border-white/15 text-gray-700 dark:text-gray-300 font-semibold hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 24 24"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.3 3.44 9.8 8.2 11.4.6.1.82-.26.82-.58v-2.03c-3.34.73-4.04-1.6-4.04-1.6-.55-1.4-1.34-1.77-1.34-1.77-1.1-.75.08-.73.08-.73 1.22.08 1.86 1.25 1.86 1.25 1.08 1.85 2.83 1.3 3.52 1 .1-.78.42-1.3.76-1.6-2.67-.3-5.47-1.33-5.47-5.93 0-1.3.47-2.38 1.24-3.22-.12-.3-.54-1.52.12-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 016 0c2.28-1.55 3.3-1.23 3.3-1.23.66 1.66.24 2.88.12 3.18.77.84 1.24 1.92 1.24 3.22 0 4.6-2.8 5.63-5.48 5.92.43.37.81 1.1.81 2.22v3.3c0 .32.22.7.82.58C20.57 21.8 24 17.3 24 12c0-6.63-5.37-12-12-12z"/></svg>
+            Исходный код
+          </a>
+        </div>
+
+        <!-- Terminal preview -->
+        <div class="mt-14 max-w-2xl mx-auto">
+          <div class="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-900 dark:bg-black/60 shadow-2xl overflow-hidden glow">
+            <div class="flex items-center gap-1.5 px-4 py-3 border-b border-white/10">
+              <span class="w-2.5 h-2.5 rounded-full bg-red-500/80"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-yellow-500/80"></span>
+              <span class="w-2.5 h-2.5 rounded-full bg-green-500/80"></span>
+              <span class="ml-3 text-xs text-gray-500 font-mono">bash — Starlabix</span>
+            </div>
+            <div class="p-4 sm:p-5 text-left code-block text-gray-300">
+              <div><span class="text-emerald-400">$</span> <span class="text-gray-100">php starlabix.php | jq .user_info.devices[0]</span></div>
+              <div class="mt-3 text-gray-500">{</div>
+              <div class="text-gray-300 pl-4">"alias": <span class="text-emerald-400">"Моя машина"</span>,</div>
+              <div class="text-gray-300 pl-4">"battery": <span class="text-brand-400">12.6</span>,</div>
+              <div class="text-gray-300 pl-4">"ctemp": <span class="text-brand-400">22</span>,</div>
+              <div class="text-gray-300 pl-4">"etemp": <span class="text-brand-400">88</span>,</div>
+              <div class="text-gray-300 pl-4">"gsm_lvl": <span class="text-brand-400">24</span>,</div>
+              <div class="text-gray-300 pl-4">"gps_lvl": <span class="text-brand-400">7</span>,</div>
+              <div class="text-gray-300 pl-4">"status": <span class="text-brand-400">1</span>,</div>
+              <div class="text-gray-300 pl-4">"position": { "x": "44.078273", "y": "43.087036" }</div>
+              <div class="text-gray-500">}</div>
+              <div class="mt-2 text-emerald-400">✓ Отправлено в Zabbix External Check</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ ABOUT ============ -->
+  <section id="about" class="py-20 md:py-24 border-t border-gray-200/60 dark:border-white/10">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-10">
+        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">🎯 О проекте</h2>
+      </div>
+      <div class="text-gray-600 dark:text-gray-400 leading-relaxed space-y-5 text-center text-lg">
+        <p>
+          <strong class="text-gray-900 dark:text-white">Starlabix</strong> — это PHP-скрипт для интеграции
+          данных автомобильной сигнализации <strong class="text-gray-900 dark:text-white">StarLine</strong>
+          в систему мониторинга <strong class="text-gray-900 dark:text-white">Zabbix</strong>.
+        </p>
+        <p>
+          Скрипт подключается к официальному API <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">developer.starline.ru</code>,
+          проходит двухэтапную авторизацию и отдаёт телеметрию в формате JSON.
+          Zabbix забирает данные через External Check и раскладывает их на items
+          через <strong>JSONPATH</strong>.
+        </p>
+      </div>
+
+      <!-- Flow -->
+      <div class="mt-12 grid sm:grid-cols-3 gap-4">
+        <div class="p-5 rounded-xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-center">
+          <div class="text-xs font-semibold text-blue-700 dark:text-blue-400 uppercase tracking-wider mb-2">Шаг 1</div>
+          <div class="font-bold text-blue-900 dark:text-blue-300">StarLine API</div>
+          <div class="text-xs text-blue-700/80 dark:text-blue-400/80 mt-1">Авторизация + телеметрия</div>
+        </div>
+        <div class="p-5 rounded-xl bg-violet-50 dark:bg-violet-500/10 border border-violet-200 dark:border-violet-500/20 text-center">
+          <div class="text-xs font-semibold text-violet-700 dark:text-violet-400 uppercase tracking-wider mb-2">Шаг 2</div>
+          <div class="font-bold text-violet-900 dark:text-violet-300">starlabix.php</div>
+          <div class="text-xs text-violet-700/80 dark:text-violet-400/80 mt-1">Сбор и JSON-вывод</div>
+        </div>
+        <div class="p-5 rounded-xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20 text-center">
+          <div class="text-xs font-semibold text-red-700 dark:text-red-400 uppercase tracking-wider mb-2">Шаг 3</div>
+          <div class="font-bold text-red-900 dark:text-red-300">Zabbix</div>
+          <div class="text-xs text-red-700/80 dark:text-red-400/80 mt-1">External Check → Items</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FEATURES ============ -->
+  <section id="features" class="py-20 md:py-28 bg-gray-50 dark:bg-white/[0.015] border-y border-gray-200/60 dark:border-white/10">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-14">
+        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">✨ Возможности</h2>
+        <p class="text-gray-600 dark:text-gray-400 max-w-xl mx-auto">Полный набор телеметрии StarLine в одном JSON-ответе.</p>
+      </div>
+
+      <!-- Comparison table -->
+      <div class="mb-12 overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.02]">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-gray-50 dark:bg-white/[0.03] border-b border-gray-200 dark:border-white/10">
+              <th class="px-5 py-3.5 text-left font-semibold">Возможность</th>
+              <th class="px-5 py-3.5 text-center font-semibold w-28">Статус</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-white/5">
+            <tr><td class="px-5 py-3">Двухэтапная авторизация StarLine API</td><td class="text-center text-emerald-500 text-lg">✅</td></tr>
+            <tr><td class="px-5 py-3">Поддержка нескольких устройств на аккаунт</td><td class="text-center text-emerald-500 text-lg">✅</td></tr>
+            <tr><td class="px-5 py-3">Данные OBD-II (пробег, ошибки)</td><td class="text-center text-emerald-500 text-lg">✅</td></tr>
+            <tr><td class="px-5 py-3">Координаты GPS (широта/долгота)</td><td class="text-center text-emerald-500 text-lg">✅</td></tr>
+            <tr><td class="px-5 py-3">Инвентаризация Zabbix (location_lat/lon)</td><td class="text-center text-emerald-500 text-lg">✅</td></tr>
+            <tr><td class="px-5 py-3">Готовый шаблон Zabbix 7.4</td><td class="text-center text-emerald-500 text-lg">✅</td></tr>
+            <tr><td class="px-5 py-3">Работа из командной строки (CLI)</td><td class="text-center text-emerald-500 text-lg">✅</td></tr>
+            <tr><td class="px-5 py-3">Обработка ошибок API</td><td class="text-center text-emerald-500 text-lg">✅</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- Data cards -->
+      <div class="grid sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div class="group p-6 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.02] hover:border-brand-300 dark:hover:border-brand-500/30 hover:shadow-lg hover:shadow-brand-500/5 transition-all">
+          <div class="w-10 h-10 rounded-xl bg-brand-50 dark:bg-brand-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <svg class="w-5 h-5 text-brand-600 dark:text-brand-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h1m8-1a1 1 0 01-1 1H9m4-1V8a1 1 0 011-1h2.586a1 1 0 01.707.293l3.414 3.414a1 1 0 01.293.707V16a1 1 0 01-1 1h-1m-6-1a1 1 0 001 1h1"/></svg>
+          </div>
+          <h3 class="font-bold text-lg mb-1.5">Устройство</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">alias, device_id, sn, imei, phone, fw_version — всё, что нужно для инвентаризации.</p>
+        </div>
+
+        <div class="group p-6 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.02] hover:border-brand-300 dark:hover:border-brand-500/30 hover:shadow-lg hover:shadow-brand-500/5 transition-all">
+          <div class="w-10 h-10 rounded-xl bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"/></svg>
+          </div>
+          <h3 class="font-bold text-lg mb-1.5">Сигналы</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Уровень GPS (шт.), уровень GSM (%), статус online/offline, напряжение АКБ, баланс SIM-карты.</p>
+        </div>
+
+        <div class="group p-6 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.02] hover:border-brand-300 dark:hover:border-brand-500/30 hover:shadow-lg hover:shadow-brand-500/5 transition-all">
+          <div class="w-10 h-10 rounded-xl bg-amber-50 dark:bg-amber-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <svg class="w-5 h-5 text-amber-600 dark:text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z"/></svg>
+          </div>
+          <h3 class="font-bold text-lg mb-1.5">Температура</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Температура салона (ctemp) и двигателя (etemp) — в °C, готово к триггерам.</p>
+        </div>
+
+        <div class="group p-6 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.02] hover:border-brand-300 dark:hover:border-brand-500/30 hover:shadow-lg hover:shadow-brand-500/5 transition-all">
+          <div class="w-10 h-10 rounded-xl bg-rose-50 dark:bg-rose-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <svg class="w-5 h-5 text-rose-600 dark:text-rose-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          </div>
+          <h3 class="font-bold text-lg mb-1.5">OBD-II</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Пробег, количество ошибок, can_descr, can_version — диагностика автомобиля в реальном времени.</p>
+        </div>
+
+        <div class="group p-6 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.02] hover:border-brand-300 dark:hover:border-brand-500/30 hover:shadow-lg hover:shadow-brand-500/5 transition-all">
+          <div class="w-10 h-10 rounded-xl bg-cyan-50 dark:bg-cyan-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <svg class="w-5 h-5 text-cyan-600 dark:text-cyan-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a2 2 0 01-2.828 0l-4.243-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+          </div>
+          <h3 class="font-bold text-lg mb-1.5">Позиция</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Широта и долгота автоматически попадают в Inventory Zabbix — можно смотреть на карте.</p>
+        </div>
+
+        <div class="group p-6 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.02] hover:border-brand-300 dark:hover:border-brand-500/30 hover:shadow-lg hover:shadow-brand-500/5 transition-all">
+          <div class="w-10 h-10 rounded-xl bg-violet-50 dark:bg-violet-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <svg class="w-5 h-5 text-violet-600 dark:text-violet-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4M7.835 4.697a3.42 3.42 0 001.946-.806 3.42 3.42 0 014.438 0 3.42 3.42 0 001.946.806 3.42 3.42 0 013.138 3.138 3.42 3.42 0 00.806 1.946 3.42 3.42 0 010 4.438 3.42 3.42 0 00-.806 1.946 3.42 3.42 0 01-3.138 3.138 3.42 3.42 0 00-1.946.806 3.42 3.42 0 01-4.438 0 3.42 3.42 0 00-1.946-.806 3.42 3.42 0 01-3.138-3.138 3.42 3.42 0 00-.806-1.946 3.42 3.42 0 010-4.438 3.42 3.42 0 00.806-1.946 3.42 3.42 0 013.138-3.138z"/></svg>
+          </div>
+          <h3 class="font-bold text-lg mb-1.5">Готовый шаблон</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Все items предварительно настроены через Dependent items и JSONPATH. Импорт — в один клик.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ INSTALL ============ -->
+  <section id="install" class="py-20 md:py-28">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">🚀 Установка</h2>
+        <p class="text-gray-600 dark:text-gray-400">5 шагов — от клонирования до первого JSON-ответа.</p>
+      </div>
+
+      <div class="space-y-6">
+        <!-- Step 1 -->
+        <div class="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 text-sm font-bold flex items-center justify-center">1</span>
+            <h3 class="font-bold">Клонируем репозиторий</h3>
+          </div>
+          <div class="rounded-lg bg-gray-900 dark:bg-black/60 p-4 code-block text-gray-300 text-xs overflow-x-auto">
+            <span class="text-emerald-400">cd</span> /etc/zabbix/externalscripts/<br/>
+            <span class="text-emerald-400">git</span> clone https://github.com/landev-ru/Starlabix.git<br/>
+            <span class="text-emerald-400">cd</span> Starlabix
+          </div>
+        </div>
+
+        <!-- Step 2 -->
+        <div class="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 text-sm font-bold flex items-center justify-center">2</span>
+            <h3 class="font-bold">Права и владелец</h3>
+          </div>
+          <div class="rounded-lg bg-gray-900 dark:bg-black/60 p-4 code-block text-gray-300 text-xs overflow-x-auto">
+            <span class="text-emerald-400">chmod</span> +x starlabix.php<br/>
+            <span class="text-emerald-400">chown</span> zabbix:zabbix starlabix.php
+          </div>
+        </div>
+
+        <!-- Step 3 -->
+        <div class="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 text-sm font-bold flex items-center justify-center">3</span>
+            <h3 class="font-bold">Проверка PHP и allow_url_fopen</h3>
+          </div>
+          <div class="rounded-lg bg-gray-900 dark:bg-black/60 p-4 code-block text-gray-300 text-xs overflow-x-auto">
+            <span class="text-emerald-400">php</span> -v<br/>
+            <span class="text-emerald-400">php</span> -i | grep allow_url_fopen<br/>
+            <span class="text-gray-500"># Должно быть: allow_url_fopen =&gt; On =&gt; On</span>
+          </div>
+        </div>
+
+        <!-- Step 4 -->
+        <div class="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 text-sm font-bold flex items-center justify-center">4</span>
+            <h3 class="font-bold">Заполняем <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">user_data.php</code></h3>
+          </div>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Укажите логин/пароль от my.starline.ru и AppId/Secret от developer.starline.ru:</p>
+          <div class="rounded-lg bg-gray-900 dark:bg-black/60 p-4 code-block text-gray-300 text-xs overflow-x-auto">
+            <span class="text-brand-400">$user_login</span> = <span class="text-emerald-400">'user@example.com'</span>;<br/>
+            <span class="text-brand-400">$user_pass</span>  = <span class="text-emerald-400">sha1('ваш_пароль')</span>;<br/>
+            <span class="text-brand-400">$user_AppId</span>       = <span class="text-emerald-400">'1234'</span>;<br/>
+            <span class="text-brand-400">$user_Secret</span>      = <span class="text-emerald-400">'mvNWuRJadRzHlcIkIjadR9o0Tnf0iMzsCsd'</span>;<br/>
+            <span class="text-brand-400">$user_Secret_md5</span>  = <span class="text-brand-400">md5</span>(<span class="text-emerald-400">'mvNWuRJadRzHlcIkIjadR9o0Tnf0iMzsCsd'</span>);
+          </div>
+        </div>
+
+        <!-- Step 5 -->
+        <div class="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10">
+          <div class="flex items-center gap-3 mb-4">
+            <span class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 text-sm font-bold flex items-center justify-center">5</span>
+            <h3 class="font-bold">Проверка запуска</h3>
+          </div>
+          <div class="rounded-lg bg-gray-900 dark:bg-black/60 p-4 code-block text-gray-300 text-xs overflow-x-auto">
+            <span class="text-emerald-400">php</span> starlabix.php | jq<br/>
+            <span class="text-gray-500"># Ожидаем JSON с user_info, obd_params, obd_errors</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ USAGE ============ -->
+  <section id="usage" class="py-20 md:py-28 bg-gray-50 dark:bg-white/[0.015] border-y border-gray-200/60 dark:border-white/10">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-14">
+        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">📘 Использование</h2>
+        <p class="text-gray-600 dark:text-gray-400 max-w-xl mx-auto">От локального запуска до работы из Zabbix.</p>
+      </div>
+
+      <div class="grid lg:grid-cols-2 gap-6">
+        <!-- CLI card -->
+        <div class="rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.02] overflow-hidden">
+          <div class="px-6 py-5 border-b border-gray-200 dark:border-white/10 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 flex items-center justify-center">
+              <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M8 9l3 3-3 3m5 0h3M5 20h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+            </div>
+            <div>
+              <h3 class="font-bold">🖥 CLI запуск</h3>
+              <p class="text-xs text-gray-500">Для отладки</p>
+            </div>
+          </div>
+          <div class="p-6">
+            <div class="rounded-lg bg-gray-900 dark:bg-black/60 p-4 code-block text-gray-300 text-xs mb-5 overflow-x-auto">
+              <div><span class="text-emerald-400">$</span> php /etc/zabbix/externalscripts/Starlabix/starlabix.php</div>
+              <div class="text-gray-500 mt-2"># Или через jq для читаемости:</div>
+              <div><span class="text-emerald-400">$</span> php starlabix.php | jq .user_info.devices[0]</div>
+            </div>
+            <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Полезно, когда нужно:</p>
+            <ul class="mt-3 text-sm text-gray-600 dark:text-gray-400 space-y-1.5 list-disc list-inside">
+              <li>Проверить корректность ключей</li>
+              <li>Увидеть полный JSON-ответ</li>
+              <li>Найти нужный JSONPATH для нового item</li>
+            </ul>
+          </div>
+        </div>
+
+        <!-- Zabbix card -->
+        <div class="rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.02] overflow-hidden">
+          <div class="px-6 py-5 border-b border-gray-200 dark:border-white/10 flex items-center gap-3">
+            <div class="w-9 h-9 rounded-lg bg-red-50 dark:bg-red-500/10 flex items-center justify-center">
+              <svg class="w-5 h-5 text-red-600 dark:text-red-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+            </div>
+            <div>
+              <h3 class="font-bold">📊 Zabbix External Check</h3>
+              <p class="text-xs text-gray-500">Master item</p>
+            </div>
+          </div>
+          <div class="p-6">
+            <div class="overflow-hidden rounded-lg border border-gray-200 dark:border-white/10 mb-5">
+              <table class="w-full text-sm">
+                <tbody class="divide-y divide-gray-100 dark:divide-white/5 text-gray-700 dark:text-gray-300">
+                  <tr><td class="px-4 py-2.5 text-gray-500 dark:text-gray-400 w-40">Name</td><td class="px-4 py-2.5 font-mono text-xs">Starlabix</td></tr>
+                  <tr><td class="px-4 py-2.5 text-gray-500 dark:text-gray-400">Type</td><td class="px-4 py-2.5 font-mono text-xs">External check</td></tr>
+                  <tr><td class="px-4 py-2.5 text-gray-500 dark:text-gray-400">Key</td><td class="px-4 py-2.5 font-mono text-xs">starlabix.php</td></tr>
+                  <tr><td class="px-4 py-2.5 text-gray-500 dark:text-gray-400">Type of information</td><td class="px-4 py-2.5 font-mono text-xs">Text</td></tr>
+                  <tr><td class="px-4 py-2.5 text-gray-500 dark:text-gray-400">Update interval</td><td class="px-4 py-2.5 font-mono text-xs">5m</td></tr>
+                  <tr><td class="px-4 py-2.5 text-gray-500 dark:text-gray-400">Timeout</td><td class="px-4 py-2.5 font-mono text-xs">20s</td></tr>
+                </tbody>
+              </table>
+            </div>
+            <p class="text-sm text-gray-600 dark:text-gray-400">Все остальные items — <strong>Dependent</strong> от master item и используют JSONPATH для извлечения полей.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ TEMPLATE ============ -->
+  <section id="template" class="py-20 md:py-28">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">📋 Шаблон Zabbix</h2>
+        <p class="text-gray-600 dark:text-gray-400">Готовый шаблон в файле <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">zbx_export_hosts.yaml</code> (Zabbix 7.4).</p>
+      </div>
+
+      <div class="mb-10 p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10">
+        <h3 class="font-bold mb-4">Импорт</h3>
+        <ol class="space-y-2 text-sm text-gray-700 dark:text-gray-300 list-decimal list-inside">
+          <li>Zabbix → <strong>Data collection</strong> → <strong>Hosts</strong> → <strong>Import</strong></li>
+          <li>Выберите файл <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">zbx_export_hosts.yaml</code></li>
+          <li>Нажмите <strong>Import</strong></li>
+        </ol>
+      </div>
+
+      <div class="overflow-hidden rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.02]">
+        <table class="w-full text-sm">
+          <thead>
+            <tr class="bg-gray-50 dark:bg-white/[0.03] border-b border-gray-200 dark:border-white/10">
+              <th class="px-4 py-3 text-left font-semibold">Item</th>
+              <th class="px-4 py-3 text-left font-semibold">JSONPATH</th>
+              <th class="px-4 py-3 text-left font-semibold w-20">Units</th>
+            </tr>
+          </thead>
+          <tbody class="divide-y divide-gray-100 dark:divide-white/5 text-gray-700 dark:text-gray-300">
+            <tr><td class="px-4 py-2.5">Имя устройства</td><td class="px-4 py-2.5 font-mono text-xs">$.user_info.devices[0].alias</td><td class="px-4 py-2.5">—</td></tr>
+            <tr><td class="px-4 py-2.5">Баланс SIM-карты</td><td class="px-4 py-2.5 font-mono text-xs">$.user_info.devices[0].balance.active.value</td><td class="px-4 py-2.5">₽</td></tr>
+            <tr><td class="px-4 py-2.5">Напряжение АКБ</td><td class="px-4 py-2.5 font-mono text-xs">$.user_info.devices[0].battery</td><td class="px-4 py-2.5">V</td></tr>
+            <tr><td class="px-4 py-2.5">Температура салона</td><td class="px-4 py-2.5 font-mono text-xs">$.user_info.devices[0].ctemp</td><td class="px-4 py-2.5">C°</td></tr>
+            <tr><td class="px-4 py-2.5">Температура двигателя</td><td class="px-4 py-2.5 font-mono text-xs">$.user_info.devices[0].etemp</td><td class="px-4 py-2.5">C°</td></tr>
+            <tr><td class="px-4 py-2.5">Уровень GPS</td><td class="px-4 py-2.5 font-mono text-xs">$.user_info.devices[0].gps_lvl</td><td class="px-4 py-2.5">шт.</td></tr>
+            <tr><td class="px-4 py-2.5">Уровень GSM</td><td class="px-4 py-2.5 font-mono text-xs">$.user_info.devices[0].gsm_lvl <span class="text-gray-400">+ JS-нормализация</span></td><td class="px-4 py-2.5">%</td></tr>
+            <tr><td class="px-4 py-2.5">Статус соединения</td><td class="px-4 py-2.5 font-mono text-xs">$.user_info.devices[0].status</td><td class="px-4 py-2.5">valuemap</td></tr>
+            <tr><td class="px-4 py-2.5">Пробег</td><td class="px-4 py-2.5 font-mono text-xs">$.obd_params.obd_params.mileage.val</td><td class="px-4 py-2.5">—</td></tr>
+            <tr><td class="px-4 py-2.5">Ошибки OBD</td><td class="px-4 py-2.5 font-mono text-xs">$.obd_params.obd_params.errors.val</td><td class="px-4 py-2.5">—</td></tr>
+            <tr><td class="px-4 py-2.5">Широта / Долгота</td><td class="px-4 py-2.5 font-mono text-xs">$.user_info.devices[0].position.*</td><td class="px-4 py-2.5">inventory</td></tr>
+          </tbody>
+        </table>
+      </div>
+
+      <p class="mt-5 text-center text-sm text-gray-500 dark:text-gray-400">
+        📍 Широта и долгота автоматически попадают в <strong>Inventory</strong> хоста — можно смотреть на карте Zabbix.
+      </p>
+    </div>
+  </section>
+
+  <!-- ============ STRUCTURE ============ -->
+  <section id="structure" class="py-20 md:py-28 bg-gray-50 dark:bg-white/[0.015] border-y border-gray-200/60 dark:border-white/10">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">📁 Структура проекта</h2>
+      </div>
+      <div class="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-900 dark:bg-black/60 overflow-hidden shadow-xl">
+        <pre class="p-5 code-block text-gray-300 overflow-x-auto"><code>Starlabix/
+├── <span class="text-brand-400">starlabix.php</span>                <span class="text-gray-500"># Основной скрипт (External Check)</span>
+├── <span class="text-amber-400">user_data.php</span>                <span class="text-gray-500"># Учётные данные (заполнить самостоятельно)</span>
+├── <span class="text-emerald-400">zbx_export_hosts.yaml</span>        <span class="text-gray-500"># Шаблон Zabbix 7.4</span>
+├── <span class="text-gray-100">logo.png</span>                     <span class="text-gray-500"># Логотип проекта</span>
+├── <span class="text-gray-100">index.html</span>                   <span class="text-gray-500"># Страница проекта (GitHub Pages)</span>
+├── <span class="text-gray-100">LICENSE</span>                      <span class="text-gray-500"># MIT License</span>
+└── <span class="text-gray-100">README.md</span></code></pre>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ WARNINGS ============ -->
+  <section id="warnings" class="py-20 md:py-28">
+    <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">⚠️ Важные замечания</h2>
+      </div>
+      <div class="space-y-4">
+        <div class="p-5 rounded-xl bg-white dark:bg-white/[0.02] border-l-4 border-l-red-500 border border-gray-200 dark:border-white/10">
+          <h3 class="font-bold mb-2">🔴 Безопасность</h3>
+          <ul class="text-sm text-gray-600 dark:text-gray-400 space-y-1 list-disc list-inside">
+            <li>Файл <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">user_data.php</code> содержит пароль и Secret — <strong>не коммитьте его в публичный репозиторий</strong>.</li>
+            <li>Добавьте <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">user_data.php</code> в <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">.gitignore</code>, используйте <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">user_data.php.example</code>.</li>
+            <li>Ограничьте права: <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">chmod 600 user_data.php</code>.</li>
+          </ul>
+        </div>
+        <div class="p-5 rounded-xl bg-white dark:bg-white/[0.02] border-l-4 border-l-orange-500 border border-gray-200 dark:border-white/10">
+          <h3 class="font-bold mb-2">🟠 Привязка к IP</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400">Приложение StarLine привязывается к IP-адресу сервера Zabbix. Если у вас динамический IP или NAT — настройте постоянный исходящий IP.</p>
+        </div>
+        <div class="p-5 rounded-xl bg-white dark:bg-white/[0.02] border-l-4 border-l-yellow-500 border border-gray-200 dark:border-white/10">
+          <h3 class="font-bold mb-2">🟡 Лимиты API</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400">StarLine API имеет лимиты. Интервал опроса <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">5m</code> — оптимально. Не ставьте <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">1m</code> — рискуете получить блокировку.</p>
+        </div>
+        <div class="p-5 rounded-xl bg-white dark:bg-white/[0.02] border-l-4 border-l-blue-500 border border-gray-200 dark:border-white/10">
+          <h3 class="font-bold mb-2">🔵 Токен</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400">Токен приложения обновляется при каждом запросе. Если получаете <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">401</code> — проверьте <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">AppId</code>, <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">Secret</code>, <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">User IP</code>.</p>
+        </div>
+        <div class="p-5 rounded-xl bg-white dark:bg-white/[0.02] border-l-4 border-l-violet-500 border border-gray-200 dark:border-white/10">
+          <h3 class="font-bold mb-2">🟣 Кодировка</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400">Если в <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">alias</code> или <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">can_descr</code> кракозябры — включите расширение <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">iconv</code> в PHP.</p>
+        </div>
+        <div class="p-5 rounded-xl bg-white dark:bg-white/[0.02] border-l-4 border-l-gray-500 border border-gray-200 dark:border-white/10">
+          <h3 class="font-bold mb-2">⚫ Проверка синтаксиса</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400">Формат JSON может отличаться в зависимости от прошивки устройства и версии API. <strong>Перед массовым применением протестируйте на одном устройстве.</strong></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FAQ ============ -->
+  <section id="faq" class="py-20 md:py-28 bg-gray-50 dark:bg-white/[0.015] border-y border-gray-200/60 dark:border-white/10">
+    <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="text-center mb-12">
+        <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">❓ FAQ</h2>
+      </div>
+      <div class="space-y-3">
+        <details class="group rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.02] overflow-hidden">
+          <summary class="flex items-center justify-between p-5 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+            <span class="font-semibold text-sm pr-4">Ошибка «Ошибка получения кода приложения»</span>
+            <svg class="chev w-5 h-5 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </summary>
+          <div class="px-5 pb-5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed border-t border-gray-100 dark:border-white/5 pt-4">
+            <p class="mb-3">Проверьте:</p>
+            <ol class="list-decimal list-inside space-y-1">
+              <li><code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">AppId</code> и <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">Secret</code> корректны и активны.</li>
+              <li><code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">$user_Secret_md5</code> действительно <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">md5($user_Secret)</code>.</li>
+              <li>Сервер Zabbix имеет доступ в интернет.</li>
+              <li><code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">allow_url_fopen = On</code> в PHP.</li>
+            </ol>
+          </div>
+        </details>
+
+        <details class="group rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.02] overflow-hidden">
+          <summary class="flex items-center justify-between p-5 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+            <span class="font-semibold text-sm pr-4">Скрипт возвращает «Не удалось получить slnet_token»</span>
+            <svg class="chev w-5 h-5 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </summary>
+          <div class="px-5 pb-5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed border-t border-gray-100 dark:border-white/5 pt-4">
+            <p class="mb-2">Причина — неверный логин или пароль. Убедитесь, что:</p>
+            <ul class="list-disc list-inside space-y-1">
+              <li><code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">$user_login</code> — точный email от my.starline.ru</li>
+              <li><code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">$user_pass = sha1('пароль')</code> — не забудьте про <code>sha1</code></li>
+              <li>В аккаунте нет запроса подтверждения по SMS — зайдите вручную на my.starline.ru</li>
+            </ul>
+          </div>
+        </details>
+
+        <details class="group rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.02] overflow-hidden">
+          <summary class="flex items-center justify-between p-5 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+            <span class="font-semibold text-sm pr-4">Как добавить второе устройство (второй автомобиль)?</span>
+            <svg class="chev w-5 h-5 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </summary>
+          <div class="px-5 pb-5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed border-t border-gray-100 dark:border-white/5 pt-4">
+            Создайте второй хост Zabbix и разверните вторую копию скрипта с отдельным <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">user_data.php</code>. Если у вас несколько устройств на <strong>одном</strong> аккаунте — используйте JSONPATH с другим индексом, например <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">$.user_info.devices[1].alias</code>.
+          </div>
+        </details>
+
+        <details class="group rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.02] overflow-hidden">
+          <summary class="flex items-center justify-between p-5 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+            <span class="font-semibold text-sm pr-4">Можно ли запускать не на сервере Zabbix, а на отдельном хосте?</span>
+            <svg class="chev w-5 h-5 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </summary>
+          <div class="px-5 pb-5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed border-t border-gray-100 dark:border-white/5 pt-4">
+            <p class="mb-2">Да. Установите Zabbix Agent на отдельный хост, положите скрипт в <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">ExternalScripts</code> и добавьте UserParameter:</p>
+            <div class="rounded-lg bg-gray-900 dark:bg-black/60 p-3 code-block text-gray-300 text-xs">
+              UserParameter=starlabix.php,php /etc/zabbix/externalscripts/Starlabix/starlabix.php
+            </div>
+          </div>
+        </details>
+
+        <details class="group rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.02] overflow-hidden">
+          <summary class="flex items-center justify-between p-5 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+            <span class="font-semibold text-sm pr-4">JSONPATH не находит поле — что делать?</span>
+            <svg class="chev w-5 h-5 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </summary>
+          <div class="px-5 pb-5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed border-t border-gray-100 dark:border-white/5 pt-4">
+            <p class="mb-2">Запустите скрипт вручную и посмотрите точную структуру:</p>
+            <div class="rounded-lg bg-gray-900 dark:bg-black/60 p-3 code-block text-gray-300 text-xs mb-2">
+              php starlabix.php | jq .user_info.devices[0]
+            </div>
+            <p>Некоторые прошивки кладут данные в другой узел (<code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">obd_params</code> vs <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">obd_errors</code>). Скорректируйте JSONPATH в шаблоне.</p>
+          </div>
+        </details>
+
+        <details class="group rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.02] overflow-hidden">
+          <summary class="flex items-center justify-between p-5 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+            <span class="font-semibold text-sm pr-4">Логотип не отображается в README.md</span>
+            <svg class="chev w-5 h-5 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </summary>
+          <div class="px-5 pb-5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed border-t border-gray-100 dark:border-white/5 pt-4">
+            <p class="mb-2">Используйте <strong>абсолютный URL</strong> через <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">raw.githubusercontent.com</code>:</p>
+            <div class="rounded-lg bg-gray-900 dark:bg-black/60 p-3 code-block text-gray-300 text-xs">
+              &lt;img src="https://raw.githubusercontent.com/landev-ru/Starlabix/main/logo.png" width="480"/&gt;
+            </div>
+          </div>
+        </details>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============ FOOTER ============ -->
+  <footer class="border-t border-gray-200/60 dark:border-white/10 py-10">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div class="flex items-center gap-3">
+          <div class="logo-wrap">
+            <img src="logo.png" alt="Starlabix" class="brand-logo-sm" />
+          </div>
+          <span class="text-xs text-gray-400 dark:text-gray-500">MIT License</span>
+        </div>
+        <div class="flex items-center gap-5 text-sm text-gray-500 dark:text-gray-400">
+          <a href="https://github.com/landev-ru/Starlabix" target="_blank" rel="noopener" class="hover:text-gray-900 dark:hover:text-white transition-colors">GitHub</a>
+          <a href="https://github.com/landev-ru/Starlabix/issues" target="_blank" rel="noopener" class="hover:text-gray-900 dark:hover:text-white transition-colors">Issues</a>
+          <a href="https://github.com/landev-ru/Starlabix/blob/main/LICENSE" target="_blank" rel="noopener" class="hover:text-gray-900 dark:hover:text-white transition-colors">License</a>
+        </div>
+      </div>
+      <p class="mt-6 text-xs text-center text-gray-400 dark:text-gray-500">
+        Скрипт предоставляется «как есть». Всегда тестируйте на тестовом устройстве перед применением в production.
+      </p>
+      <p class="mt-3 text-xs text-center text-gray-400 dark:text-gray-500">
+        Made with ❤️ for Zabbix engineers
+      </p>
+    </div>
+  </footer>
+
 </body>
 </html>
