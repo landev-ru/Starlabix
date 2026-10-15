@@ -22,6 +22,7 @@
 - [О проекте](#-о-проекте)
 - [Возможности](#-возможности)
 - [Требования](#-требования)
+- [Получение доступа к StarLine API](#-получение-доступа-к-starline-api)
 - [Установка](#-установка)
 - [Настройка](#-настройка)
 - [Использование](#-использование)
@@ -77,9 +78,134 @@
 - **Zabbix Server** `6.0+` (шаблон протестирован на 7.4)
 - **Zabbix Agent** для External Check (или скрипт на самом сервере Zabbix)
 - Учётная запись на [my.starline.ru](https://my.starline.ru/site/login)
-- Зарегистрированное приложение на [developer.starline.ru](https://developer.starline.ru) — `AppId` и `Secret`
+- Зарегистрированное приложение в разделе **«Разработчикам»** — `AppId` и `Secret`
+  (см. [Получение доступа к StarLine API](#-получение-доступа-к-starline-api))
 
 > ℹ️ **Важно:** при регистрации приложения на developer.starline.ru укажите IP-адрес сервера Zabbix в поле **User IP** — StarLine привязывает токен к IP.
+
+---
+
+## 🔑 Получение доступа к StarLine API
+
+Прежде чем приступить к установке, необходимо получить **AppId** и **Secret** в личном кабинете StarLine. Без них скрипт не сможет авторизоваться в API.
+
+> ℹ️ **Что такое AppId и Secret?**
+> Это идентификатор и секретный ключ вашего приложения. Открытое StarLine API позволяет владельцам охранных комплексов создавать приложения для управления своими автомобилями. **AppId** и **Secret** дают доступ исключительно к вашей машине.
+
+---
+
+### Шаг 1. Войдите в личный кабинет
+
+Откройте [my.starline.ru](https://my.starline.ru/site/login) и авторизуйтесь под своей учётной записью.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/landev-ru/Starlabix/main/docs/step1-login.png" alt="Вход в my.starline.ru" width="720"/>
+</p>
+
+---
+
+### Шаг 2. Перейдите в раздел «Разработчикам»
+
+В верхнем меню личного кабинета найдите и откройте раздел **«Разработчикам»**.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/landev-ru/Starlabix/main/docs/step2-developers.png" alt="Раздел Разработчикам" width="720"/>
+</p>
+
+---
+
+### Шаг 3. Нажмите «Создать приложение»
+
+В открывшемся разделе нажмите кнопку **«Создать приложение»**.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/landev-ru/Starlabix/main/docs/step3-create-app.png" alt="Создать приложение" width="720"/>
+</p>
+
+---
+
+### Шаг 4. Заполните форму «Новое приложение»
+
+В окне **«Новое приложение»** укажите:
+
+| Поле | Что указать |
+|---|---|
+| **Имя приложения** | Например, `Starlabix` или `Zabbix Monitoring` |
+| **Описание приложения** | Например, `Мониторинг сигнализации в Zabbix` |
+| **User IP** | IP-адрес вашего сервера Zabbix (обязательно!) |
+
+Нажмите **«СОХРАНИТЬ»**.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/landev-ru/Starlabix/main/docs/step4-new-app.png" alt="Новое приложение" width="720"/>
+</p>
+
+> ⚠️ **Важно:** StarLine привязывает токен к IP-адресу, указанному в поле **User IP**. Если сервер Zabbix работает за NAT — укажите его внешний IP. Если IP динамический — настройте статический IP или DDNS.
+
+---
+
+### Шаг 5. Скопируйте AppId и Secret
+
+После сохранения в разделе **«Разработчикам»** появится созданное приложение с парой **AppId** и **Secret**.
+
+<p align="center">
+  <img src="https://raw.githubusercontent.com/landev-ru/Starlabix/main/docs/step5-app-credentials.png" alt="AppId и Secret" width="720"/>
+</p>
+
+Скопируйте оба значения — они понадобятся при настройке файла `user_data.php`.
+
+---
+
+### Шаг 6. Внесите значения в `user_data.php`
+
+```php
+<?php
+$user_login = 'user@example.com';   // Логин от my.starline.ru
+$user_pass  = sha1('ваш_пароль');   // Пароль, обёрнутый в sha1()
+
+$user_AppId       = '1234';                                     // Ваш AppId
+$user_Secret      = 'mvNWuRJadRzHlcIkIjadR9o0Tnf0iMzsCsd';      // Ваш Secret
+$user_Secret_md5  = md5('mvNWuRJadRzHlcIkIjadR9o0Tnf0iMzsCsd'); // md5 от Secret
+?>
+```
+
+> 💡 **Подсказка:** `$user_Secret_md5` можно сгенерировать командой:
+>
+> ```bash
+> php -r "echo md5('ваш_Secret');"
+> ```
+
+---
+
+### 🧪 Проверка
+
+После заполнения `user_data.php` запустите скрипт вручную:
+
+```bash
+php starlabix.php | jq
+```
+
+Если всё настроено корректно — получите JSON с полями `user_info`, `mobile_devices`, `obd_params`, `obd_errors`.
+
+Если получена ошибка — смотрите раздел [FAQ](#-faq).
+
+---
+
+### 🛡️ Безопасность
+
+> 🔴 **Никогда не публикуйте `user_data.php` в открытых репозиториях!**
+>
+> - Добавьте файл в `.gitignore`:
+>   ```gitignore
+>   user_data.php
+>   ```
+> - Используйте `user_data.php.example` как публичный образец.
+> - Ограничьте права доступа к файлу:
+>   ```bash
+>   chmod 600 user_data.php
+>   chown zabbix:zabbix user_data.php
+>   ```
+> - **Secret** — это секретный ключ. Если он скомпрометирован — немедленно удалите приложение в личном кабинете и создайте новое.
 
 ---
 
@@ -258,10 +384,18 @@ Item с типом **External check**:
 Starlabix/
 ├── starlabix.php                # Основной скрипт (External Check)
 ├── user_data.php                # Учётные данные (заполнить самостоятельно)
+├── user_data.php.example        # Образец для публичного использования
 ├── zbx_export_hosts.yaml        # Шаблон Zabbix 7.4
 ├── logo.png                     # Логотип проекта
 ├── index.html                   # Страница проекта (GitHub Pages)
+├── docs/                        # Скриншоты для документации
+│   ├── step1-login.png
+│   ├── step2-developers.png
+│   ├── step3-create-app.png
+│   ├── step4-new-app.png
+│   └── step5-app-credentials.png
 ├── LICENSE                      # MIT License
+├── .gitignore                   # Исключения (user_data.php и др.)
 └── README.md
 ```
 
