@@ -1,6 +1,8 @@
 zabbix_export:
   version: '7.0'
   host_groups:
+
+  
     - uuid: fa1ac6e38b6c48eea4de8402ed7f0cd5
       name: MyDevice
   hosts:
