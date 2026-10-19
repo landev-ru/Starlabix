@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="https://raw.githubusercontent.com/landev-ru/Starlabix/gs-pages/logo.png" alt="Starlabix — StarLine Monitoring for Zabbix" width="480"/>
+  <img src="https://raw.githubusercontent.com/landev-ru/Starlabix/gh-pages/logo.png" alt="Starlabix — StarLine Monitoring for Zabbix" width="480"/>
 </p>
 
 <p align="center">
