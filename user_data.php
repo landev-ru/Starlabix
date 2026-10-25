@@ -18,4 +18,5 @@ $user_pass = sha1(''); //Ваш пароль от https://my.starline.ru/site/lo
 $user_AppId = ''; //Ваш сгенерированный AppId //Your generated AppId //#example "$user_AppId = '1812';"
 $user_Secret = ''; //Ваш сгенерированный Secret //Your generated Secret //#example "$user_Secret = 'mvNWuRJadRzHlcIkIjadR9o0Tnf0iMzsCsd';"
 $user_Secret_md5 = md5(''); //Ваш сгенерированный Secret //Your generated Secret //#example "$user_Secret_md5 = md5('mvNWuRJadRzHlcIkIjadR9o0Tnf0iMzsCsd');"
+$user_ip = '185.x.x.x';  // реальный исходящий IP сервера (как в кабинете StarLine)
 ?>
