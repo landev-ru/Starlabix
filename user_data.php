@@ -8,9 +8,9 @@
 //░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░          ░▒▓█▓▓█▓▒░
 //░▒▓████████▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓███████▓▒░  ░▒▓████████▓▒░    ░▒▓██▓▒░
 //
-//Created by LanDev
-//https://github.com/landev-ru/Starlabix
-//Contacts - fraso1989@gmail.com / Fraso@mail.ru
+// Автор: LanDev
+// https://github.com/landev-ru/Starlabix
+// Контакты: fraso1989@gmail.com / Fraso@mail.ru
 //
 $user_login = ''; //Ваш логин от https://my.starline.ru/site/login
 $user_pass = sha1(''); //Ваш пароль от https://my.starline.ru/site/login
