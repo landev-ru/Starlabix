@@ -76,7 +76,6 @@
 
 <body class="bg-white dark:bg-surface-dark text-gray-900 dark:text-gray-100 antialiased selection:bg-brand-500/20">
 
-  <!-- ============ NAV ============ -->
   <header class="sticky top-0 z-50 border-b border-gray-200/60 dark:border-white/10 bg-white/80 dark:bg-surface-dark/80 backdrop-blur-xl">
     <nav class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 h-16 flex items-center justify-between">
       <a href="#" class="flex items-center group" aria-label="Starlabix — на главную">
@@ -101,7 +100,6 @@
     </nav>
   </header>
 
-  <!-- ============ HERO ============ -->
   <section class="relative overflow-hidden">
     <div class="absolute top-0 left-1/2 -translate-x-1/2 w-[700px] h-[420px] bg-brand-500/10 dark:bg-brand-500/5 rounded-full blur-3xl pointer-events-none"></div>
 
@@ -151,7 +149,6 @@
           </a>
         </div>
 
-        <!-- Terminal preview -->
         <div class="mt-14 max-w-2xl mx-auto">
           <div class="rounded-xl border border-gray-200 dark:border-white/10 bg-gray-900 dark:bg-black/60 shadow-2xl overflow-hidden glow">
             <div class="flex items-center gap-1.5 px-4 py-3 border-b border-white/10">
@@ -180,7 +177,6 @@
     </div>
   </section>
 
-  <!-- ============ ABOUT ============ -->
   <section id="about" class="py-20 md:py-24 border-t border-gray-200/60 dark:border-white/10">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-10">
@@ -231,9 +227,7 @@
       </div>
     </div>
   </section>
-
-  <!-- ============ API ACCESS ============ -->
-  <section id="api-access" class="py-20 md:py-28 bg-gray-50 dark:bg-white/[0.015] border-y border-gray-200/60 dark:border-white/10">
+    <section id="api-access" class="py-20 md:py-28 bg-gray-50 dark:bg-white/[0.015] border-y border-gray-200/60 dark:border-white/10">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-12">
         <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">🔑 Получение доступа к StarLine API</h2>
@@ -243,7 +237,6 @@
         </p>
       </div>
 
-      <!-- Info banner -->
       <div class="mb-10 p-5 rounded-2xl bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20">
         <div class="flex gap-3">
           <svg class="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -258,10 +251,8 @@
         </div>
       </div>
 
-      <!-- Steps -->
       <div class="space-y-6">
 
-        <!-- Step 1 -->
         <div class="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10">
           <div class="flex items-center gap-3 mb-4">
             <span class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 text-sm font-bold flex items-center justify-center">1</span>
@@ -272,7 +263,6 @@
           </p>
         </div>
 
-        <!-- Step 2 -->
         <div class="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10">
           <div class="flex items-center gap-3 mb-4">
             <span class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 text-sm font-bold flex items-center justify-center">2</span>
@@ -283,7 +273,6 @@
           </p>
         </div>
 
-        <!-- Step 3 -->
         <div class="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10">
           <div class="flex items-center gap-3 mb-4">
             <span class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 text-sm font-bold flex items-center justify-center">3</span>
@@ -294,7 +283,6 @@
           </p>
         </div>
 
-        <!-- Step 4 -->
         <div class="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10">
           <div class="flex items-center gap-3 mb-4">
             <span class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 text-sm font-bold flex items-center justify-center">4</span>
@@ -319,22 +307,17 @@
                   <td class="px-4 py-2.5 font-medium">Описание приложения</td>
                   <td class="px-4 py-2.5">Например, «Мониторинг сигнализации в Zabbix»</td>
                 </tr>
-                <tr>
-                  <td class="px-4 py-2.5 font-medium">User IP</td>
-                  <td class="px-4 py-2.5">IP-адрес вашего сервера Zabbix <strong>(обязательно!)</strong></td>
-                </tr>
               </tbody>
             </table>
           </div>
 
           <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Нажмите <strong>«СОХРАНИТЬ»</strong>.</p>
 
-          <div class="p-3 rounded-lg bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-xs text-amber-800 dark:text-amber-300">
-            ⚠️ <strong>Важно:</strong> StarLine привязывает токен к IP-адресу, указанному в поле <strong>User IP</strong>. Если сервер Zabbix работает за NAT — укажите его внешний IP. Узнать внешний IP можно командой <code class="font-mono">curl -s https://api.ipify.org</code>. Если IP динамический — настройте статический IP или DDNS.
+          <div class="p-3 rounded-lg bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-xs text-blue-800 dark:text-blue-300">
+            ℹ️ <strong>Про IP-адрес:</strong> в форме создания приложения на <code class="font-mono">my.starline.ru/developer</code> <strong>нет поля «User IP»</strong>. IP-адрес сервера передаётся скриптом как параметр <code class="font-mono">user_ip</code> при логине (<code class="font-mono">/apiV3/user/login</code>) — это часть протокола StarLine API.
           </div>
         </div>
 
-        <!-- Step 5 -->
         <div class="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10">
           <div class="flex items-center gap-3 mb-4">
             <span class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 text-sm font-bold flex items-center justify-center">5</span>
@@ -353,7 +336,6 @@
           </p>
         </div>
 
-        <!-- Step 6 -->
         <div class="p-6 rounded-2xl bg-white dark:bg-white/[0.02] border border-gray-200 dark:border-white/10">
           <div class="flex items-center gap-3 mb-4">
             <span class="w-8 h-8 rounded-lg bg-brand-100 dark:bg-brand-500/15 text-brand-700 dark:text-brand-400 text-sm font-bold flex items-center justify-center">6</span>
@@ -377,11 +359,10 @@
           </div>
 
           <div class="mt-4 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-xs text-emerald-800 dark:text-emerald-300">
-            🌐 <strong>Автоопределение IP:</strong> если <code class="font-mono">$user_ip</code> пуст, скрипт сам узнаёт внешний IP через <code class="font-mono">api.ipify.org</code>, <code class="font-mono">ifconfig.me</code>, <code class="font-mono">icanhazip.com</code> или <code class="font-mono">ipinfo.io</code>. Указывайте <code class="font-mono">$user_ip</code> вручную только если автоопределение не работает (закрытый исходящий трафик, NAT и т.п.).
+            🌐 <strong>Про <code class="font-mono">$user_ip</code>:</strong> параметр отправляется в StarLine внутри запроса на логин — это <strong>не настройка в кабинете</strong>. Если оставить пустым, скрипт сам определит внешний IP через <code class="font-mono">api.ipify.org</code>, <code class="font-mono">ifconfig.me</code>, <code class="font-mono">icanhazip.com</code> или <code class="font-mono">ipinfo.io</code>. Указывайте вручную только если автоопределение не работает (NAT, закрытый исходящий трафик).
           </div>
         </div>
 
-        <!-- Проверка -->
         <div class="p-6 rounded-2xl bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20">
           <div class="flex items-start gap-3">
             <svg class="w-5 h-5 text-emerald-600 dark:text-emerald-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
@@ -404,7 +385,6 @@
           </div>
         </div>
 
-        <!-- Безопасность -->
         <div class="p-6 rounded-2xl bg-red-50 dark:bg-red-500/10 border border-red-200 dark:border-red-500/20">
           <div class="flex items-start gap-3">
             <svg class="w-5 h-5 text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
@@ -433,9 +413,7 @@
       </div>
     </div>
   </section>
-
-  <!-- ============ FEATURES ============ -->
-  <section id="features" class="py-20 md:py-28">
+    <section id="features" class="py-20 md:py-28">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-14">
         <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">✨ Возможности</h2>
@@ -524,7 +502,6 @@
     </div>
   </section>
 
-  <!-- ============ INSTALL ============ -->
   <section id="install" class="py-20 md:py-28 bg-gray-50 dark:bg-white/[0.015] border-y border-gray-200/60 dark:border-white/10">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-12">
@@ -604,7 +581,6 @@
     </div>
   </section>
 
-  <!-- ============ USAGE ============ -->
   <section id="usage" class="py-20 md:py-28">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-14">
@@ -667,9 +643,7 @@
       </div>
     </div>
   </section>
-
-  <!-- ============ TEMPLATE ============ -->
-  <section id="template" class="py-20 md:py-28 bg-gray-50 dark:bg-white/[0.015] border-y border-gray-200/60 dark:border-white/10">
+    <section id="template" class="py-20 md:py-28 bg-gray-50 dark:bg-white/[0.015] border-y border-gray-200/60 dark:border-white/10">
     <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-12">
         <h2 class="text-3xl md:text-4xl font-extrabold tracking-tight mb-3">📋 Шаблон Zabbix</h2>
@@ -716,7 +690,6 @@
     </div>
   </section>
 
-  <!-- ============ STRUCTURE ============ -->
   <section id="structure" class="py-20 md:py-28">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-12">
@@ -743,7 +716,6 @@
     </div>
   </section>
 
-  <!-- ============ WARNINGS ============ -->
   <section id="warnings" class="py-20 md:py-28 bg-gray-50 dark:bg-white/[0.015] border-y border-gray-200/60 dark:border-white/10">
     <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-12">
@@ -759,9 +731,9 @@
           </ul>
         </div>
         <div class="p-5 rounded-xl bg-white dark:bg-white/[0.02] border-l-4 border-l-orange-500 border border-gray-200 dark:border-white/10">
-          <h3 class="font-bold mb-2">🟠 Привязка к IP</h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Приложение StarLine привязывается к IP-адресу сервера Zabbix. Если у вас динамический IP или NAT — настройте постоянный исходящий IP.</p>
-          <p class="text-sm text-gray-600 dark:text-gray-400">Скрипт <strong>автоматически определяет внешний IP</strong> и подставляет его в <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">user_ip</code>. Ручное указание <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">$user_ip</code> нужно только если автоопределение не работает.</p>
+          <h3 class="font-bold mb-2">🟠 IP-адрес</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">В форме создания приложения на <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">my.starline.ru/developer</code> <strong>нет поля «User IP»</strong>. IP передаётся скриптом в параметре <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">user_ip</code> при вызове <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">/apiV3/user/login</code>.</p>
+          <p class="text-sm text-gray-600 dark:text-gray-400">Скрипт <strong>автоматически определяет внешний IP</strong> и подставляет его. Ручное указание <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">$user_ip</code> нужно только если автоопределение не работает (NAT, закрытый трафик).</p>
         </div>
         <div class="p-5 rounded-xl bg-white dark:bg-white/[0.02] border-l-4 border-l-yellow-500 border border-gray-200 dark:border-white/10">
           <h3 class="font-bold mb-2">🟡 Лимиты API</h3>
@@ -769,7 +741,7 @@
         </div>
         <div class="p-5 rounded-xl bg-white dark:bg-white/[0.02] border-l-4 border-l-blue-500 border border-gray-200 dark:border-white/10">
           <h3 class="font-bold mb-2">🔵 Токен</h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400">Токен приложения обновляется при каждом запросе. Если получаете <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">401</code> — проверьте <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">AppId</code>, <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">Secret</code>, <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">User IP</code>.</p>
+          <p class="text-sm text-gray-600 dark:text-gray-400">Токен приложения обновляется при каждом запросе. Если получаете <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">401</code> — проверьте <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">AppId</code>, <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">Secret</code>, корректность <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">user_ip</code>.</p>
         </div>
         <div class="p-5 rounded-xl bg-white dark:bg-white/[0.02] border-l-4 border-l-violet-500 border border-gray-200 dark:border-white/10">
           <h3 class="font-bold mb-2">🟣 Кодировка</h3>
@@ -783,7 +755,6 @@
     </div>
   </section>
 
-  <!-- ============ FAQ ============ -->
   <section id="faq" class="py-20 md:py-28">
     <div class="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="text-center mb-12">
@@ -832,8 +803,7 @@
               <li>Если <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">$user_ip</code> пуст — скрипт пытается определить внешний IP. Проверьте доступ в интернет:
                 <div class="mt-1 rounded-lg bg-gray-900 dark:bg-black/60 p-2 code-block text-gray-300 text-xs">curl -s https://api.ipify.org</div>
               </li>
-              <li>Если автоопределение не работает — укажите <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">$user_ip</code> вручную в <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">user_data.php</code>.</li>
-              <li>Проверьте, что в кабинете StarLine в поле <strong>User IP</strong> указан тот же адрес.</li>
+              <li>Если автоопределение не работает — укажите <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">$user_ip</code> вручную в <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">user_data.php</code> (внешний IP сервера).</li>
               <li>Если запросы к StarLine таймаутят — смотрите следующую ветку FAQ.</li>
             </ol>
           </div>
@@ -914,7 +884,6 @@
     </div>
   </section>
 
-  <!-- ============ FOOTER ============ -->
   <footer class="border-t border-gray-200/60 dark:border-white/10 py-10">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
       <div class="flex flex-col sm:flex-row items-center justify-between gap-4">
