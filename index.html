@@ -204,6 +204,12 @@
           подробная инструкция в разделе
           <a href="#api-access" class="text-brand-600 dark:text-brand-400 hover:underline font-medium">Получение доступа к API</a>.
         </p>
+        <p class="text-base">
+          🌐 <strong class="text-gray-900 dark:text-white">IP-адрес сервера определяется автоматически.</strong>
+          Если в <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">user_data.php</code> не указан
+          <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">$user_ip</code>, скрипт сам узнаёт внешний IP
+          через публичные сервисы. Указывать IP вручную нужно только в особых случаях.
+        </p>
       </div>
 
       <div class="mt-12 grid sm:grid-cols-3 gap-4">
@@ -324,7 +330,7 @@
           <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">Нажмите <strong>«СОХРАНИТЬ»</strong>.</p>
 
           <div class="p-3 rounded-lg bg-amber-50 dark:bg-amber-500/10 border border-amber-200 dark:border-amber-500/20 text-xs text-amber-800 dark:text-amber-300">
-            ⚠️ <strong>Важно:</strong> StarLine привязывает токен к IP-адресу, указанному в поле <strong>User IP</strong>. Если сервер Zabbix работает за NAT — укажите его внешний IP. Если IP динамический — настройте статический IP или DDNS.
+            ⚠️ <strong>Важно:</strong> StarLine привязывает токен к IP-адресу, указанному в поле <strong>User IP</strong>. Если сервер Zabbix работает за NAT — укажите его внешний IP. Узнать внешний IP можно командой <code class="font-mono">curl -s https://api.ipify.org</code>. Если IP динамический — настройте статический IP или DDNS.
           </div>
         </div>
 
@@ -360,12 +366,18 @@
             <div class="mt-2"><span class="text-brand-400">$user_AppId</span>       = <span class="text-emerald-400">'1234'</span>;</div>
             <div><span class="text-brand-400">$user_Secret</span>      = <span class="text-emerald-400">'mvNWuRJadRzHlcIkIjadR9o0Tnf0iMzsCsd'</span>;</div>
             <div><span class="text-brand-400">$user_Secret_md5</span>  = <span class="text-brand-400">md5</span>(<span class="text-emerald-400">'mvNWuRJadRzHlcIkIjadR9o0Tnf0iMzsCsd'</span>);</div>
+            <div class="mt-2 text-gray-500">// IP сервера — можно оставить пустым, определится автоматически</div>
+            <div><span class="text-brand-400">$user_ip</span> = <span class="text-emerald-400">''</span>;</div>
             <div><span class="text-gray-500">?&gt;</span></div>
           </div>
 
           <div class="mt-4 p-3 rounded-lg bg-blue-50 dark:bg-blue-500/10 border border-blue-200 dark:border-blue-500/20 text-xs text-blue-800 dark:text-blue-300">
             💡 <strong>Подсказка:</strong> <code class="font-mono">$user_Secret_md5</code> можно сгенерировать командой:<br/>
             <span class="font-mono">php -r "echo md5('ваш_Secret');"</span>
+          </div>
+
+          <div class="mt-4 p-3 rounded-lg bg-emerald-50 dark:bg-emerald-500/10 border border-emerald-200 dark:border-emerald-500/20 text-xs text-emerald-800 dark:text-emerald-300">
+            🌐 <strong>Автоопределение IP:</strong> если <code class="font-mono">$user_ip</code> пуст, скрипт сам узнаёт внешний IP через <code class="font-mono">api.ipify.org</code>, <code class="font-mono">ifconfig.me</code>, <code class="font-mono">icanhazip.com</code> или <code class="font-mono">ipinfo.io</code>. Указывайте <code class="font-mono">$user_ip</code> вручную только если автоопределение не работает (закрытый исходящий трафик, NAT и т.п.).
           </div>
         </div>
 
@@ -446,6 +458,7 @@
             <tr><td class="px-5 py-3">Инвентаризация Zabbix (location_lat/lon)</td><td class="text-center text-emerald-500 text-lg">✅</td></tr>
             <tr><td class="px-5 py-3">Готовый шаблон Zabbix 7.4</td><td class="text-center text-emerald-500 text-lg">✅</td></tr>
             <tr><td class="px-5 py-3">Работа из командной строки (CLI)</td><td class="text-center text-emerald-500 text-lg">✅</td></tr>
+            <tr><td class="px-5 py-3">Автоопределение внешнего IP</td><td class="text-center text-emerald-500 text-lg">✅</td></tr>
             <tr><td class="px-5 py-3">Обработка ошибок API</td><td class="text-center text-emerald-500 text-lg">✅</td></tr>
           </tbody>
         </table>
@@ -499,6 +512,14 @@
           <h3 class="font-bold text-lg mb-1.5">Готовый шаблон</h3>
           <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Все items предварительно настроены через Dependent items и JSONPATH. Импорт — в один клик.</p>
         </div>
+
+        <div class="group p-6 rounded-2xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.02] hover:border-brand-300 dark:hover:border-brand-500/30 hover:shadow-lg hover:shadow-brand-500/5 transition-all">
+          <div class="w-10 h-10 rounded-xl bg-sky-50 dark:bg-sky-500/10 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform">
+            <svg class="w-5 h-5 text-sky-600 dark:text-sky-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+          </div>
+          <h3 class="font-bold text-lg mb-1.5">Автоопределение IP</h3>
+          <p class="text-sm text-gray-600 dark:text-gray-400 leading-relaxed">Если <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">$user_ip</code> не задан, скрипт сам узнаёт внешний IP через публичные сервисы.</p>
+        </div>
       </div>
     </div>
   </section>
@@ -531,7 +552,8 @@
           </div>
           <div class="rounded-lg bg-gray-900 dark:bg-black/60 p-4 code-block text-gray-300 text-xs overflow-x-auto">
             <span class="text-emerald-400">chmod</span> +x starlabix.php<br/>
-            <span class="text-emerald-400">chown</span> zabbix:zabbix starlabix.php
+            <span class="text-emerald-400">chown</span> zabbix:zabbix starlabix.php user_data.php<br/>
+            <span class="text-emerald-400">chmod</span> 600 user_data.php
           </div>
         </div>
 
@@ -554,14 +576,17 @@
           </div>
           <p class="text-sm text-gray-600 dark:text-gray-400 mb-4">
             Укажите логин/пароль от my.starline.ru и AppId/Secret, полученные в
-            <a href="#api-access" class="text-brand-600 dark:text-brand-400 hover:underline font-medium">разделе про API</a>:
+            <a href="#api-access" class="text-brand-600 dark:text-brand-400 hover:underline font-medium">разделе про API</a>.
+            <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">$user_ip</code> можно оставить пустым:
           </p>
           <div class="rounded-lg bg-gray-900 dark:bg-black/60 p-4 code-block text-gray-300 text-xs overflow-x-auto">
             <span class="text-brand-400">$user_login</span> = <span class="text-emerald-400">'user@example.com'</span>;<br/>
             <span class="text-brand-400">$user_pass</span>  = <span class="text-emerald-400">sha1('ваш_пароль')</span>;<br/>
             <span class="text-brand-400">$user_AppId</span>       = <span class="text-emerald-400">'1234'</span>;<br/>
             <span class="text-brand-400">$user_Secret</span>      = <span class="text-emerald-400">'mvNWuRJadRzHlcIkIjadR9o0Tnf0iMzsCsd'</span>;<br/>
-            <span class="text-brand-400">$user_Secret_md5</span>  = <span class="text-brand-400">md5</span>(<span class="text-emerald-400">'mvNWuRJadRzHlcIkIjadR9o0Tnf0iMzsCsd'</span>);
+            <span class="text-brand-400">$user_Secret_md5</span>  = <span class="text-brand-400">md5</span>(<span class="text-emerald-400">'mvNWuRJadRzHlcIkIjadR9o0Tnf0iMzsCsd'</span>);<br/>
+            <span class="text-gray-500">// IP сервера — можно оставить пустым</span><br/>
+            <span class="text-brand-400">$user_ip</span> = <span class="text-emerald-400">''</span>;
           </div>
         </div>
 
@@ -735,7 +760,8 @@
         </div>
         <div class="p-5 rounded-xl bg-white dark:bg-white/[0.02] border-l-4 border-l-orange-500 border border-gray-200 dark:border-white/10">
           <h3 class="font-bold mb-2">🟠 Привязка к IP</h3>
-          <p class="text-sm text-gray-600 dark:text-gray-400">Приложение StarLine привязывается к IP-адресу сервера Zabbix. Если у вас динамический IP или NAT — настройте постоянный исходящий IP.</p>
+          <p class="text-sm text-gray-600 dark:text-gray-400 mb-2">Приложение StarLine привязывается к IP-адресу сервера Zabbix. Если у вас динамический IP или NAT — настройте постоянный исходящий IP.</p>
+          <p class="text-sm text-gray-600 dark:text-gray-400">Скрипт <strong>автоматически определяет внешний IP</strong> и подставляет его в <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">user_ip</code>. Ручное указание <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1.5 py-0.5 rounded">$user_ip</code> нужно только если автоопределение не работает.</p>
         </div>
         <div class="p-5 rounded-xl bg-white dark:bg-white/[0.02] border-l-4 border-l-yellow-500 border border-gray-200 dark:border-white/10">
           <h3 class="font-bold mb-2">🟡 Лимиты API</h3>
@@ -792,6 +818,46 @@
               <li><code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">$user_pass = sha1('пароль')</code> — не забудьте про <code>sha1</code></li>
               <li>В аккаунте нет запроса подтверждения по SMS — зайдите вручную на my.starline.ru</li>
             </ul>
+          </div>
+        </details>
+
+        <details class="group rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.02] overflow-hidden">
+          <summary class="flex items-center justify-between p-5 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+            <span class="font-semibold text-sm pr-4">Скрипт возвращает «Ошибка подключения к API авторизации»</span>
+            <svg class="chev w-5 h-5 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </summary>
+          <div class="px-5 pb-5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed border-t border-gray-100 dark:border-white/5 pt-4">
+            <p class="mb-2">Скорее всего, проблема с определением IP или сетевой доступностью. Что проверить:</p>
+            <ol class="list-decimal list-inside space-y-2">
+              <li>Если <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">$user_ip</code> пуст — скрипт пытается определить внешний IP. Проверьте доступ в интернет:
+                <div class="mt-1 rounded-lg bg-gray-900 dark:bg-black/60 p-2 code-block text-gray-300 text-xs">curl -s https://api.ipify.org</div>
+              </li>
+              <li>Если автоопределение не работает — укажите <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">$user_ip</code> вручную в <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">user_data.php</code>.</li>
+              <li>Проверьте, что в кабинете StarLine в поле <strong>User IP</strong> указан тот же адрес.</li>
+              <li>Если запросы к StarLine таймаутят — смотрите следующую ветку FAQ.</li>
+            </ol>
+          </div>
+        </details>
+
+        <details class="group rounded-xl border border-gray-200 dark:border-white/10 bg-white dark:bg-white/[0.02] overflow-hidden">
+          <summary class="flex items-center justify-between p-5 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+            <span class="font-semibold text-sm pr-4">Скрипт зависает / «Connection timed out»</span>
+            <svg class="chev w-5 h-5 text-gray-400 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/></svg>
+          </summary>
+          <div class="px-5 pb-5 text-sm text-gray-600 dark:text-gray-400 leading-relaxed border-t border-gray-100 dark:border-white/5 pt-4">
+            <p class="mb-2">Это сетевая проблема: некоторые IP-адреса StarLine недоступны с вашего сервера. Проверьте:</p>
+            <div class="rounded-lg bg-gray-900 dark:bg-black/60 p-3 code-block text-gray-300 text-xs mb-3 overflow-x-auto">
+              for ip in $(getent ahostsv4 id.starline.ru | awk '{print $1}' | sort -u); do<br/>
+              &nbsp;&nbsp;echo -n "$ip: "<br/>
+              &nbsp;&nbsp;timeout 5 bash -c "echo &gt; /dev/tcp/$ip/443" 2&gt;/dev/null &amp;&amp; echo "TCP OK" || echo "TCP FAIL"<br/>
+              done
+            </div>
+            <p class="mb-2">Если часть IP показывает <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">FAIL</code> — это проблема на стороне StarLine или вашего провайдера. Временное решение — зафиксировать рабочий IP в <code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">/etc/hosts</code>:</p>
+            <div class="rounded-lg bg-gray-900 dark:bg-black/60 p-3 code-block text-gray-300 text-xs mb-3 overflow-x-auto">
+              echo "185.129.96.83 id.starline.ru" | sudo tee -a /etc/hosts<br/>
+              echo "185.129.96.83 developer.starline.ru" | sudo tee -a /etc/hosts
+            </div>
+            <p>Если ни один IP не отвечает — обратитесь в поддержку StarLine (<code class="text-xs font-mono bg-gray-100 dark:bg-white/10 px-1 rounded">server@starline.ru</code>) или используйте прокси/VPN с российским IP.</p>
           </div>
         </details>
 
