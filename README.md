@@ -42,6 +42,8 @@
 
 > 🚗 **Один хост Zabbix = один автомобиль** — настраивается через отдельный файл `user_data.php`.
 
+> 🌐 **IP-адрес сервера определяется автоматически.** Если в `user_data.php` не указан `$user_ip`, скрипт сам узнаёт внешний IP через публичные сервисы (`api.ipify.org` и др.). Указывать IP вручную нужно только в особых случаях (закрытый исходящий трафик, NAT и т.п.).
+
 ---
 
 ## ✨ Возможности
@@ -56,6 +58,7 @@
 | Инвентаризация Zabbix (location_lat/lon) | ✅ |
 | Готовый шаблон Zabbix 7.4 | ✅ |
 | Работа из командной строки (CLI) | ✅ |
+| **Автоопределение внешнего IP** | ✅ |
 | Обработка ошибок API | ✅ |
 
 ### 📊 Что собирается
@@ -138,6 +141,12 @@
   <img src="https://raw.githubusercontent.com/landev-ru/Starlabix/gh-pages/step4-new-app.png" alt="Новое приложение" width="720"/>
 </p>
 
+> ⚠️ **Важно:** StarLine привязывает токен к IP-адресу, указанному в поле **User IP**. Если сервер Zabbix работает за NAT — укажите его **внешний** IP. Узнать внешний IP можно командой:
+> ```bash
+> curl -s https://api.ipify.org
+> ```
+> Если IP динамический — настройте статический IP или DDNS.
+
 ---
 
 ### Шаг 5. Скопируйте AppId и Secret
@@ -162,8 +171,33 @@ $user_pass  = sha1('ваш_пароль');   // Пароль, обёрнутый
 $user_AppId       = '1234';                                     // Ваш AppId
 $user_Secret      = 'mvNWuRJadRzHlcIkIjadR9o0Tnf0iMzsCsd';      // Ваш Secret
 $user_Secret_md5  = md5('mvNWuRJadRzHlcIkIjadR9o0Tnf0iMzsCsd'); // md5 от Secret
+
+// IP-адрес сервера, указанный в кабинете StarLine («User IP» приложения).
+// МОЖНО ОСТАВИТЬ ПУСТЫМ ('') — тогда скрипт определит внешний IP автоматически.
+// Укажите вручную, если автоопределение не работает (например, закрыт исходящий трафик).
+$user_ip = '';
 ?>
 ```
+
+> 💡 **Подсказка:** `$user_Secret_md5` можно сгенерировать командой:
+> ```bash
+> php -r "echo md5('ваш_Secret');"
+> ```
+
+### 🌐 Про `$user_ip` — автоопределение
+
+Скрипт умеет **сам определять внешний IP** сервера. Логика `getUserIP()`:
+
+1. Если `$user_ip` задан в `user_data.php` — используется он.
+2. Иначе скрипт пробует несколько публичных сервисов по очереди:
+   `api.ipify.org`, `ifconfig.me/ip`, `icanhazip.com`, `ipinfo.io/ip`.
+3. Если ни один не ответил и скрипт запущен в web-режиме — берётся `REMOTE_ADDR` / `X-Forwarded-For`.
+4. Крайний случай (CLI + закрытый трафик) — `127.0.0.1` и запись предупреждения в `error_log`.
+
+**Когда `$user_ip` нужно указать вручную:**
+- Сервер за NAT, а в кабинете StarLine прописан внешний IP.
+- Исходящий трафик закрыт, и автоопределение не срабатывает.
+- Хотите исключить зависимость от сторонних сервисов.
 
 ### 🧪 Проверка
 
@@ -194,7 +228,8 @@ cd Starlabix
 ```bash
 # Скрипт должен быть исполняемым для пользователя zabbix
 chmod +x starlabix.php
-chown zabbix:zabbix starlabix.php
+chown zabbix:zabbix starlabix.php user_data.php
+chmod 600 user_data.php
 ```
 
 ### 3. Проверяем PHP CLI
@@ -253,6 +288,9 @@ $user_pass  = sha1('ваш_пароль');
 $user_AppId       = '1234';
 $user_Secret      = 'mvNWuRJadRzHlcIkIjadR9o0Tnf0iMzsCsd';
 $user_Secret_md5  = md5('mvNWuRJadRzHlcIkIjadR9o0Tnf0iMzsCsd');
+
+// IP сервера (можно оставить пустым — определится автоматически)
+$user_ip = '';
 ?>
 ```
 
@@ -380,6 +418,7 @@ Starlabix/
 
 > 🟠 **Привязка к IP**
 > - Приложение StarLine привязывается к IP-адресу сервера Zabbix. Если у вас динамический IP или NAT — настройте постоянный исходящий IP.
+> - Скрипт **автоматически определяет внешний IP** и подставляет его в `user_ip`. Ручное указание `$user_ip` нужно только если автоопределение не работает.
 
 > 🟡 **Лимиты API**
 > - StarLine API имеет лимиты. Интервал опроса `5m` — оптимально. Не ставьте `1m` — рискуете получить блокировку.
@@ -418,6 +457,37 @@ php -r "var_dump(allow_url_fopen());"
 - `$user_login` — точный email, указанный при регистрации на my.starline.ru
 - `$user_pass = sha1('ваш_пароль')` — не забудьте про функцию `sha1`
 - В аккаунте нет запроса подтверждения входа по SMS (зайдите вручную на my.starline.ru)
+</details>
+
+<details>
+<summary><b>Скрипт возвращает {"error": "Ошибка подключения к API авторизации"}</b></summary>
+
+Скорее всего, проблема с определением IP или сетевой доступностью. Что проверить:
+1. Если `$user_ip` пуст — скрипт пытается определить внешний IP. Убедитесь, что сервер имеет доступ в интернет:
+   ```bash
+   curl -s https://api.ipify.org
+   ```
+2. Если автоопределение не работает — укажите `$user_ip` вручную в `user_data.php`.
+3. Проверьте, что в кабинете StarLine в поле **User IP** указан тот же адрес.
+4. Если запросы к StarLine таймаутят — смотрите следующую ветку FAQ.
+</details>
+
+<details>
+<summary><b>Скрипт зависает / "Connection timed out"</b></summary>
+
+Это сетевая проблема: некоторые IP-адреса StarLine недоступны с вашего сервера. Проверьте:
+```bash
+for ip in $(getent ahostsv4 id.starline.ru | awk '{print $1}' | sort -u); do
+  echo -n "$ip: "
+  timeout 5 bash -c "echo > /dev/tcp/$ip/443" 2>/dev/null && echo "TCP OK" || echo "TCP FAIL"
+done
+```
+Если часть IP показывает `FAIL` — это проблема на стороне StarLine или вашего провайдера. Временное решение — зафиксировать рабочий IP в `/etc/hosts`:
+```bash
+echo "185.129.96.83 id.starline.ru" | sudo tee -a /etc/hosts
+echo "185.129.96.83 developer.starline.ru" | sudo tee -a /etc/hosts
+```
+Если ни один IP не отвечает — обратитесь в поддержку StarLine (`server@starline.ru`) или используйте прокси/VPN с российским IP.
 </details>
 
 <details>
