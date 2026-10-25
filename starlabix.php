@@ -9,33 +9,101 @@
 //░▒▓█▓▒░        ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░          ░▒▓█▓▓█▓▒░
 //░▒▓████████▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓█▓▒░░▒▓█▓▒░ ░▒▓███████▓▒░  ░▒▓████████▓▒░    ░▒▓██▓▒░
 //
-//Created by LanDev
-//https://github.com/landev-ru/Starlabix
-//Contacts - fraso1989@gmail.com / Fraso@mail.ru
+// Автор: LanDev
+// https://github.com/landev-ru/Starlabix
+// Контакты: fraso1989@gmail.com / Fraso@mail.ru
 //
-//error_reporting(0);     // Turn off all error reporting
-include 'user_data.php';        //We connect the user_data.php file with user settings
+// Скрипт для мониторинга автомобильной сигнализации StarLine в Zabbix.
+// Выполняется как External Check: получает телеметрию через официальный API StarLine
+// и отдаёт её в формате JSON, который Zabbix разбирает через JSONPATH.
+//
 
-// Функция для получения реального IP пользователя (с поддержкой CLI)
-function getUserIP() {
-    // Для CLI режима (запуск из командной строки)
-    if (php_sapi_name() === 'cli') {
-        return '127.0.0.1';
+//error_reporting(0);     // Отключить вывод всех ошибок (при необходимости раскомментировать)
+include 'user_data.php';   // Подключаем файл с настройками пользователя (логин, пароль, AppId, Secret, IP)
+
+/**
+ * Автоопределение внешнего IP сервера.
+ * Нужно для параметра user_ip при логине в StarLine.. 
+ * Если пользователь не задал
+ * $user_ip в user_data.php, пробуем определить его автоматически через
+ * несколько публичных сервисов. Если ни один не ответил — возвращаем null.
+ */
+function detectExternalIp() {
+    $services = [
+        'https://api.ipify.org',
+        'https://ifconfig.me/ip',
+        'https://icanhazip.com',
+        'https://ipinfo.io/ip',
+    ];
+    foreach ($services as $url) {
+        // Контекст HTTP-запроса: GET, таймаут 5 секунд, не падать на HTTP-ошибках
+        $ctx = stream_context_create([
+            'http' => [
+                'method' => 'GET',
+                'timeout' => 5,
+                'ignore_errors' => true,
+                'user_agent' => 'Starlabix/1.0',
+            ],
+            'ssl' => [
+                'verify_peer' => true,
+                'verify_peer_name' => true,
+            ],
+        ]);
+        $ip = @file_get_contents($url, false, $ctx);
+        if ($ip === false) {
+            continue;   // Сервис недоступен — пробуем следующий
+        }
+        $ip = trim($ip);
+        if (filter_var($ip, FILTER_VALIDATE_IP)) {
+            return $ip; // Получили валидный IP — возвращаем
+        }
     }
-    
-    if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
-        return $_SERVER['HTTP_CLIENT_IP'];
-    } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
-        $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
-        return trim($ips[0]);
-    } elseif (!empty($_SERVER['REMOTE_ADDR'])) {
-        return $_SERVER['REMOTE_ADDR'];
-    } else {
-        return '0.0.0.0';
-    }
+    return null;        // Ни один сервис не дал валидный IP
 }
 
-// Функция для извлечения cookie из заголовков
+/**
+ * IP-адрес, который отправляется в StarLine при логине (параметр user_ip).
+ * Приоритет:
+ *   1. $user_ip из user_data.php (если задан вручную);
+ *   2. автоопределение внешнего IP через detectExternalIp();
+ *   3. для web-режима — REMOTE_ADDR / X-Forwarded-For;
+ *   4. крайний случай — 127.0.0.1 с записью предупреждения в error_log.
+ */
+function getUserIP() {
+    global $user_ip;
+
+    // 1. Явно заданный IP в user_data.php
+    if (!empty($user_ip)) {
+        return $user_ip;
+    }
+
+    // 2. Автоопределение (работает и в CLI, и в web)
+    $detected = detectExternalIp();
+    if ($detected !== null) {
+        return $detected;
+    }
+
+    // 3. Fallback: для web-режима можно взять IP из заголовков запроса
+    if (php_sapi_name() !== 'cli') {
+        if (!empty($_SERVER['HTTP_CLIENT_IP'])) {
+            return $_SERVER['HTTP_CLIENT_IP'];
+        } elseif (!empty($_SERVER['HTTP_X_FORWARDED_FOR'])) {
+            $ips = explode(',', $_SERVER['HTTP_X_FORWARDED_FOR']);
+            return trim($ips[0]);
+        } elseif (!empty($_SERVER['REMOTE_ADDR'])) {
+            return $_SERVER['REMOTE_ADDR'];
+        }
+    }
+
+    // 4. Не удалось определить IP — предупреждаем в лог и отдаём заглушку
+    error_log('Starlabix: не удалось определить внешний IP. Укажите $user_ip в user_data.php.');
+    return '127.0.0.1';
+}
+
+/**
+ * Извлекает значение cookie с именем $cookieName из массива HTTP-заголовков.
+ * Используется для получения slnet_token из Set-Cookie при авторизации.
+ */
 function extractCookie($headers, $cookieName) {
     foreach ($headers as $header) {
         if (stripos($header, 'Set-Cookie:') === 0) {
@@ -47,7 +115,10 @@ function extractCookie($headers, $cookieName) {
     return null;
 }
 
-//Getting the application code
+// ---------------------------------------------------------------------------
+// Шаг 1. Получение кода приложения (getCode)
+// API возвращает code, который затем используется для вычисления токена.
+// ---------------------------------------------------------------------------
 $getCode1 = file_get_contents("https://id.starline.ru/apiV3/application/getCode?appId=$user_AppId&secret=$user_Secret_md5");
 if ($getCode1 === false) {
     die(json_encode(['error' => 'Ошибка получения кода приложения']));
@@ -57,8 +128,13 @@ if (json_last_error() !== JSON_ERROR_NONE || !isset($decgetCode["desc"]["code"])
     die(json_encode(['error' => 'Ошибка парсинга ответа getCode', 'raw' => $getCode1]));
 }
 $getCode = $decgetCode["desc"]["code"];
+// Токен приложения = md5(Secret + code) — по документации StarLine API
 $codeToken = md5($user_Secret . $getCode);
 
+// ---------------------------------------------------------------------------
+// Шаг 2. Получение токена приложения (getToken)
+// Токен передаётся в заголовке token при логине пользователя.
+// ---------------------------------------------------------------------------
 $getToken = file_get_contents("https://id.starline.ru/apiV3/application/getToken?appId=$user_AppId&secret=$codeToken");
 if ($getToken === false) {
     die(json_encode(['error' => 'Ошибка получения токена приложения']));
@@ -69,18 +145,20 @@ if (json_last_error() !== JSON_ERROR_NONE || !isset($decgetTokenCode["desc"]["to
 }
 $getTokenCode = $decgetTokenCode["desc"]["token"];
 
-//
-//User authentication
+// ---------------------------------------------------------------------------
+// Шаг 3. Авторизация пользователя (login)
+// Отправляем multipart/form-data с логином, паролем (sha1) и user_ip.
+// ---------------------------------------------------------------------------
 $loginarr = 'https://id.starline.ru/apiV3/user/login';
 
-// Формируем multipart/form-data вручную
+// Формируем multipart/form-data вручную (file_get_contents не умеет это из коробки)
 $params = array(
     'login' => $user_login,
     'pass' => $user_pass,
     'user_ip' => getUserIP()
 );
 
-$boundary = uniqid();
+$boundary = uniqid();   // Уникальная граница между частями формы
 $content = '';
 
 foreach ($params as $key => $value) {
@@ -88,7 +166,7 @@ foreach ($params as $key => $value) {
     $content .= "Content-Disposition: form-data; name=\"$key\"\r\n\r\n";
     $content .= "$value\r\n";
 }
-$content .= "--$boundary--\r\n";
+$content .= "--$boundary--\r\n";   // Закрывающая граница
 
 $headers = [
     "Content-Type: multipart/form-data; boundary=$boundary",
@@ -100,7 +178,7 @@ $result = file_get_contents($loginarr, false, stream_context_create([
         'method' => 'POST',
         'header' => implode("\r\n", $headers) . "\r\n",
         'content' => $content,
-        'ignore_errors' => true
+        'ignore_errors' => true   // Не падать на HTTP-ошибках — разберём тело сами
     ]
 ]));
 
@@ -112,30 +190,29 @@ if ($result === false) {
 $resultdec = json_decode($result, true);
 // Если JSON не валидный, пробуем конвертировать через iconv (если доступно)
 if (json_last_error() !== JSON_ERROR_NONE) {
-    // Пробуем iconv если доступно
     if (function_exists('iconv')) {
         $result = iconv('ISO-8859-1', 'UTF-8//IGNORE', $result);
         $resultdec = json_decode($result, true);
     }
-    
-    // Если все еще ошибка, возвращаем raw ответ
     if (json_last_error() !== JSON_ERROR_NONE) {
         die(json_encode(['error' => 'Ошибка парсинга JSON ответа', 'raw' => $result]));
     }
 }
 
-// Проверяем на ошибки
+// Проверяем на ошибки: state == 0 означает ошибку авторизации
 if (isset($resultdec['state']) && $resultdec['state'] == 0) {
     die(json_encode(['error' => $resultdec['message'] ?? 'Неизвестная ошибка авторизации']));
 }
 
-// Проверяем наличие user_token
+// Проверяем наличие user_token — он нужен для следующего шага
 if (!isset($resultdec["desc"]["user_token"])) {
     die(json_encode(['error' => 'Не удалось получить user_token', 'response' => $resultdec]));
 }
 
-//
-//User authorization by StarLineID token
+// ---------------------------------------------------------------------------
+// Шаг 4. Авторизация по StarLineID token (auth.slid)
+// Меняем user_token на сессионную cookie slnet для запросов к developer.starline.ru.
+// ---------------------------------------------------------------------------
 $slid_token_url = 'https://developer.starline.ru/json/v2/auth.slid';
 $params1 = json_encode(array('slid_token' => $resultdec["desc"]["user_token"]));
 
@@ -159,7 +236,7 @@ if ($response === false) {
     die(json_encode(['error' => 'Ошибка авторизации в WebAPI']));
 }
 
-// Получаем заголовки ответа
+// Получаем заголовки ответа (file_get_contents складывает их в $http_response_header)
 $responseHeaders = $http_response_header ?? [];
 
 // Извлекаем slnet_token из заголовка Set-Cookie
@@ -180,6 +257,9 @@ if (!isset($resultdec1["user_id"])) {
 
 $userID1 = $resultdec1["user_id"];
 
+// ---------------------------------------------------------------------------
+// Шаг 5. Запросы к developer.starline.ru с cookie slnet
+// ---------------------------------------------------------------------------
 // Заголовки для последующих запросов с Cookie
 $headers = [
     'cache-control: max-age=0',
@@ -195,7 +275,7 @@ $headers = [
     'Cookie: slnet=' . $slnet
 ];
 
-// Создаем контекст для GET запросов с cookie
+// Создаём контекст для GET-запросов с cookie (переиспользуется ниже)
 $options = [
     'http' => [
         'method' => 'GET',
@@ -205,53 +285,54 @@ $options = [
 ];
 $context = stream_context_create($options);
 
-//
-// Get user_info
+// Получаем информацию о пользователе и его устройствах (user_info)
 $resalt1 = file_get_contents('https://developer.starline.ru/json/v2/user/' . $userID1 . '/user_info', false, $context);
 if ($resalt1 === false) {
     die(json_encode(['error' => 'Ошибка получения user_info']));
 }
 
-//Get mobile_devices
+// Получаем список мобильных устройств (mobile_devices)
 $resalt2 = file_get_contents('https://developer.starline.ru/json/v1/user/' . $userID1 . '/mobile_devices', false, $context);
 if ($resalt2 === false) {
     die(json_encode(['error' => 'Ошибка получения mobile_devices']));
 }
 
-//Get Device id
+// Из user_info берём device_id первого устройства — он нужен для запросов OBD
 $device_id = json_decode($resalt1, true);
 if (json_last_error() !== JSON_ERROR_NONE || !isset($device_id["devices"][0]["device_id"])) {
     die(json_encode(['error' => 'Не удалось получить device_id', 'user_info' => $resalt1]));
 }
 $device_id_end = $device_id["devices"][0]["device_id"];
 
-// Get obd_params
+// Получаем параметры OBD-II (пробег, температура и т.п.)
 $resalt3 = file_get_contents('https://developer.starline.ru/json/v1/device/' . $device_id_end . '/obd_params', false, $context);
 if ($resalt3 === false) {
     die(json_encode(['error' => 'Ошибка получения obd_params']));
 }
 
-//Get obd_errors
+// Получаем ошибки OBD-II
 $resalt4 = file_get_contents('https://developer.starline.ru/json/v1/device/' . $device_id_end . '/obd_errors', false, $context);
 if ($resalt4 === false) {
     die(json_encode(['error' => 'Ошибка получения obd_errors']));
 }
 
-//
-//JSON output
+// ---------------------------------------------------------------------------
+// Шаг 6. Формирование итогового JSON для Zabbix
+// Структура: user_info, mobile_devices, obd_params, obd_errors + метаданные.
+// ---------------------------------------------------------------------------
 echo ("{\"user_info\":");
-echo ($resalt1);                //Get user_info
+echo ($resalt1);                // user_info
 echo (",");
 echo ("\"mobile_devices\":");
-echo ($resalt2);                //Get mobile_devices
+echo ($resalt2);                // mobile_devices
 echo (",");
 echo ("\"obd_params\":");
-echo ($resalt3);                // Get obd_params
+echo ($resalt3);                // obd_params
 echo (",");
 echo ("\"obd_errors\":");
-echo ($resalt4);                //Get obd_errors
+echo ($resalt4);                // obd_errors
 echo (",");
-echo ("\"creator\":\"iFraso-dev\",\"link\":\"https://github.com/landev-ru/Starlabix\",\"contacts\":\"fraso1989@gmail.com\"");  //Get creator
+echo ("\"creator\":\"iFraso-dev\",\"link\":\"https://github.com/landev-ru/Starlabix\",\"contacts\":\"fraso1989@gmail.com\"");  // Метаданные автора
 echo ("}")
 //
 ?>
